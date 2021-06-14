@@ -1,12 +1,14 @@
 #pragma once
-#include <math/vec3.h>
+#include "ilib/Math/vec2.h"
+#include "ilib/Math/vec3.h"
+
 template<class T> union vec4 {
 	T vec[4];
-	struct { T r, g, b, a; };
 	struct { T x, y, z, w; };
-	struct { T le, to, ri, bo; };
 	struct { T left, top, right, bottom; };
-	struct { T x_, y_, wi, he; };
+	struct { T le, to, ri, bo; };
+	struct { T _0, _1, wi, he; };
+	struct { T _2, _3, width, height; };
 
 	vec4(){}
 	vec4(T v) : x(v), y(v), z(v), w(v){}
@@ -37,6 +39,9 @@ template<class T> union vec4 {
 		double cosa = cos(angle);
 		double sina = -sin(angle);
 		return vec4<T>(x*cosa - z*sina, y, x*sina + z*cosa, w);
+	}
+	template<class K> bool inside(const vec2<K>& p){
+	    return p.x >= x && p.x <= x + width && p.y >= y && p.y <= y + height;
 	}
 	operator const float*() const {
 		return vec;

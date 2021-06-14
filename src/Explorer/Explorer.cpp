@@ -7,6 +7,7 @@
 #include "Game/Planet.h"
 #include "Game/Chunk.h"
 #include "GUI/GUI.h"
+#include "GUI/Sprite.h"
 #include "GUI/Component.h"
 #include "GUI/Components/Button.h"
 #include "GUI/Components/StackPane.h"
@@ -48,7 +49,7 @@ int main(){
 }
 
 Explorer::Explorer(){
-	renderer = mkShared<Renderer>(*this);
+	renderer = mkUnique<Renderer>(*this);
 }
 
 Explorer::~Explorer(){
@@ -76,48 +77,22 @@ void Explorer::run(){
 	}
 }
 
-#define RADS (3.14159265359/180.0)
 void Explorer::update(){
     Window::fireEvents();
 
-    auto& win = *renderer->window;
     if(gameInstance){
-        auto& gi = *gameInstance;
-        auto& cm = *gi.camera;
-        float speed = 0.02;
-        if(win.getKey(GLFW_KEY_A)){
-            cm.pos.x -= cos(cm.rot.y * RADS) * speed;
-            cm.pos.z -= sin(cm.rot.y * RADS) * speed;
-        }
-        if(win.getKey(GLFW_KEY_D)){
-            cm.pos.x += cos(cm.rot.y * RADS) * speed;
-            cm.pos.z += sin(cm.rot.y * RADS) * speed;
-        }
-        if(win.getKey(GLFW_KEY_W)){
-            cm.pos.x += sin(cm.rot.y * RADS) * speed;
-            cm.pos.z -= cos(cm.rot.y * RADS) * speed;
-        }
-        if(win.getKey(GLFW_KEY_S)){
-            cm.pos.x -= sin(cm.rot.y * RADS) * speed;
-            cm.pos.z += cos(cm.rot.y * RADS) * speed;
-        }
-        if(win.getKey(GLFW_KEY_SPACE)){
-            cm.pos.y += speed;
-        }
-        if(win.getKey(GLFW_KEY_LEFT_SHIFT)){
-            cm.pos.y -= speed;
-        }
+        gameInstance->update();
     }
 
 }
 
 Shared<GUI> Explorer::createMainMenuGUI(){
 	auto gui = mkShared<GUI>(renderer->context);
-	gui->root->setBackgroundTexture(mkShared<Texture>("res\\title_bg.png"));
-	gui->root->bgScaling = ScalingMode::STRETCH;
+	gui->root->setBackground(renderer->textures["title_bg"]);
+	gui->root->bgSprite->scalingMode = ScalingMode::STRETCH;
 	auto root = mkShared<SplitPane>();
 	gui->root->add(root);
-	root->setBackgroundColor({0, 0, 0, 0});
+	root->setBackground({0, 0, 0, 0});
 	root->value = 0.35;
 	root->insets = {8, 8, 8, 8};
 
@@ -127,31 +102,32 @@ Shared<GUI> Explorer::createMainMenuGUI(){
 	menu->setGrid(1, 8);
 	menu->setSpacing(8, 4);
 	menu->insets = {8, 8, 8, 8};
-	menu->setBackgroundColor({1, 1, 1, 0.5f});
-	menu->setBackgroundTexture(renderer->textures["gui_panel2"]);
-	menu->bgScaling = ScalingMode::SPRITE;
+	menu->setBackground({1, 1, 1, 0.5f});
+	menu->setBackground(renderer->textures["gui_panel2"]);
+	menu->bgSprite->scalingMode = ScalingMode::SPRITE;
 	menu->spriteBorders = {.0625, .0625, .0625, .0625};
 
 	auto exitBtn = mkShared<Button>("Exit");
-	exitBtn->setBackgroundTexture(renderer->textures["gui_button"]);
-	exitBtn->font = renderer->font;
+	exitBtn->setBackground(renderer->textures["gui_button"]);
+	exitBtn->bgSprite->scalingMode = ScalingMode::SPRITE;
+	exitBtn->setFont(renderer->font);
 	exitBtn->addActionListener([this](auto&){
 		renderer->window->setCloseFlag(true);
 	});
-	exitBtn->bgScaling = ScalingMode::SPRITE;
 	exitBtn->spriteBorders = {.0625, .0625, .0625, .0625};
 	menu->add(exitBtn);
 
 	Shared<TextField> field = mkShared<TextField>("127.0.0.1");
 
 	auto playBtn = mkShared<Button>("Join game...");
-	playBtn->setBackgroundTexture(renderer->textures["gui_button"]);
-	playBtn->font = renderer->font;
+	playBtn->setBackground(renderer->textures["gui_button"]);
+	playBtn->bgSprite->scalingMode = ScalingMode::SPRITE;
+	playBtn->setFont(renderer->font);
 	playBtn->addActionListener([this, field](const ActionEvent&){
 		try {
             auto* sock = new BufferedSocket(new Socket(field->text.c_str(), 3333));
             sock->init(4096);
-            gameInstance = mkShared<Game>(*this);
+            gameInstance = mkUnique<Game>(*this);
             gameInstance->initInput();
             gameInstance->socket = sock;
             gameInstance->join();
@@ -173,14 +149,14 @@ Shared<GUI> Explorer::createMainMenuGUI(){
             renderer->window->holdCursor();
 		}catch(...){}
 	});
-	playBtn->bgScaling = ScalingMode::SPRITE;
+
 	playBtn->spriteBorders = {.0625, .0625, .0625, .0625};
 	menu->add(playBtn);
 
 
-	field->setBackgroundTexture(renderer->textures["gui_panel2"]);
+	field->setBackground(renderer->textures["gui_panel2"]);
 	field->setFont(renderer->font);
-	field->bgScaling = ScalingMode::SPRITE;
+	field->bgSprite->scalingMode = ScalingMode::SPRITE;
 	field->spriteBorders = {.0625, .0625, .0625, .0625};
 	menu->add(field);
 	return gui;
@@ -191,9 +167,9 @@ Shared<GUI> Explorer::createStartGUI(){
 
 	auto root = mkShared<SplitPane>();
 	gui->root->add(root);
-	root->setBackgroundTexture(mkShared<Texture>("res\\title_bg.png"));
-	root->bgScaling = ScalingMode::STRETCH;
-	root->setBackgroundColor({1, 1, 1, 1});
+	root->setBackground(mkShared<Texture>("res\\title_bg.png"));
+	root->bgSprite->scalingMode = ScalingMode::STRETCH;
+	root->setBackground({1, 1, 1, 1});
 	root->value = 0.35;
 	root->insets = {8, 8, 8, 8};
 
@@ -201,12 +177,12 @@ Shared<GUI> Explorer::createStartGUI(){
 	root->add(menu);
 
 	menu->orientation = (GridPane::LR_BT);
-	menu->setGrid(1, 8);
+	menu->setGrid(1, 16);
 	menu->setSpacing(8, 4);
 	menu->insets = {8, 8, 8, 8};
-	menu->setBackgroundColor({1, 1, 1, 0.5f});
-	menu->setBackgroundTexture(renderer->textures["gui_panel2"]);
-	menu->bgScaling = ScalingMode::SPRITE;
+	menu->setBackground({1, 1, 1, 0.5f});
+	menu->setBackground(renderer->textures["gui_panel2"]);
+	menu->bgSprite->scalingMode = ScalingMode::SPRITE;
 	menu->spriteBorders = {.0625, .0625, .0625, .0625};
 
 	auto beginBtn = gui_button("Begin!");
@@ -224,17 +200,9 @@ Shared<GUI> Explorer::createStartGUI(){
 
 Shared<Button> Explorer::gui_button(const char* text){
 	auto btn = mkShared<Button>(text);
-	/*btn->insets = {10, 10, 10, 10};
-	auto cmp = mkShared<Component>();
-	cmp->setBackgroundColor({0, 1, 0, 0.2});
-	btn->addSizeListener([this, cmp](float w, float h){
-		cmp->setBounds(10, 10, w - 20, h - 20);
-	});
-
-	btn->add(cmp);*/
 	btn->setFont(renderer->font);
-	btn->setBackgroundTexture(renderer->textures["gui_button"]);
-	btn->bgScaling = ScalingMode::SPRITE;
+	btn->setBackground(renderer->textures["gui_button"]);
+	btn->bgSprite->scalingMode = ScalingMode::SPRITE;
 	btn->spriteBorders = {.0625, .0625, .0625, .0625};
 	return btn;
 }

@@ -1,13 +1,10 @@
 #include "Camera.h"
-#include "Explorer/Explorer.h"
-#include "Explorer/Window.h"
-#include "Render/Renderer.h"
 #include <cmath>
 #define RADS (3.14159265359/180.0)
 
 Camera::Camera(){}
 
-double* Camera::makeProjection(float aspect, float fov){
+double* Camera::makeProjection(){
 	projection = mat4d::perspective(aspect, fov, near, far);
 	return projection.mat;
 }

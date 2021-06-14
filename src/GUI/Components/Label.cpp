@@ -11,28 +11,15 @@ Label::Label(const std::string& text) : Component(){
 
 void Label::paintComponent(GLContext& gi, vec2f anch){
 	Component::paintComponent(gi, anch);
-	if(!font) return;
 
-	gi.enableTexture2d();
-	gi.enableAlphaTesting();
-	glPushMatrix();
-	glTranslatef(anch.x, anch.y, 0);
-	const int chars = text.length();
-	const float aw = width;
-	const float ah = height;
-	const float w = aw * (1-insets.le-insets.ri);
-	const float h = ah * (1-insets.to-insets.bo);
+    if(textFont){
+        vec4f rect(
+            anch.x + insets.left,
+            anch.y + insets.top,
+            width - insets.left - insets.right,
+            height - insets.top - insets.bottom
+	    );
 
-	const float sw = 1.0/gi.getAspect() * font->aspect; // Scale Width, combination of aspect ratios.
-	const float hs = h * sw;
-	const float cr = w/chars; // Char Ratio, Width by char
-	if(hs > cr){
-		glTranslatef(insets.le*aw, (ah - cr/sw)/2, 0);
-		glScalef(cr, cr/sw, 1);
-	} else {
-		glTranslatef((w - hs*chars)/2, insets.to*ah, 0);
-		glScalef(hs, h, 1);
+        Text::draw(gi, text, rect, fgColor);
 	}
-	font->drawString(gi, text, fgColor);
-	glPopMatrix();
 }

@@ -18,8 +18,8 @@ public:
 
 	Screen screen = Screen::OFF;
     Unique<Instance> explorerInstance;
-	Shared<Game> gameInstance;
-	Shared<Renderer> renderer;
+	Unique<Game> gameInstance;
+	Unique<Renderer> renderer;
 
 	float fov = 90;
 	std::vector<Shared<GUI>> attachedGUIs;

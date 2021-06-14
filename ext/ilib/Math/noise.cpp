@@ -1,5 +1,5 @@
 #include "noise.h"
-#include <math/prng.h>
+#include "ilib/Math/prng.h"
 #include <cmath>
 
 Noise::Noise(uint64 sd) {

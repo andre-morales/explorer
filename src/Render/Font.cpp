@@ -6,17 +6,23 @@
 #include "Render/GLContext.h"
 #include "Render/Color.h"
 #include <GL/glew.h>
-#include <cstring>
+#include <string>
 
+Font::Font(){
+    aspect = 0;
+}
 Font::Font(Shared<TextureAtlas> atlas){
-	this->fontAtlas = atlas;
-	fontAtlas->getTileSize(&chWidth, &chHeight);
-	aspect = atlas->tileWidth / (float)atlas->tileHeight;
+	setTexture(atlas);
+}
+
+void Font::setTexture(Shared<TextureAtlas> tex){
+    this->fontAtlas = tex;
+    fontAtlas->getTileSize(&charWidth, &charHeight);
+    fontAtlas->getTileScale(&charSW, &charSH);
+	aspect = fontAtlas->tileWidth / (float)fontAtlas->tileHeight;
 }
 
 void Font::drawString(GLContext& glc, const std::string& text, const Color& cl){
-	glAlphaFunc(GL_GREATER, 0.5);
-	glc.enableAlphaTesting();
 	glColor4f(cl.r, cl.g, cl.b, cl.a);
 	glVertexPointer(2, GL_FLOAT, 0, Quad::uvs);
 	fontAtlas->bind();
@@ -54,9 +60,9 @@ void Font::drawString(GLContext& glc, const std::string& text, const Color& cl){
 		fontAtlas->getTileUV(c - 32, &u, &v);
 		const float uvs[] = {
 			u, v,
-			u+chWidth, v,
-			u+chWidth, v+chHeight,
-			u, v+chHeight,
+			u+charSW, v,
+			u+charSW, v+charSH,
+			u, v+charSH,
 		};
 		glTexCoordPointer(2, GL_FLOAT, 0, uvs);
 		glDrawArrays(GL_QUADS, 0, 4);
@@ -72,7 +78,7 @@ void Font::drawShadowString(GLContext& glc, const std::string& text, const Color
 
 	glTranslatef(-1, 0, 0);
 	glVertexPointer(2, GL_FLOAT, 0, Quad::uvs);
-	glBindTexture(GL_TEXTURE_2D, fontAtlas->glId);
+	fontAtlas->bind();
 
 	float u = 0, v = 0;
 	uint8 chars = 0; // Characters typed horizontally.
@@ -110,15 +116,17 @@ void Font::drawShadowString(GLContext& glc, const std::string& text, const Color
 		fontAtlas->getTileUV(c - 32, &u, &v);
 		const float uvs[] = {
 			u, v,
-			u+chWidth, v,
-			u+chWidth, v+chHeight,
-			u, v+chHeight,
+			u+charSW, v,
+			u+charSW, v+charSH,
+			u, v+charSH,
 		};
 		glTexCoordPointer(2, GL_FLOAT, 0, uvs);
+
 		// Shadow
 		glColor4f(sh.r, sh.g, sh.b, sh.a);
 		glTranslatef(sx + 1, sy, 0);
 		glDrawArrays(GL_QUADS, 0, 4);
+
 		// Char
 		glColor4f(cl.r, cl.g, cl.b, cl.a);
 		glTranslatef(-sx, -sy, 0);

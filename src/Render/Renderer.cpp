@@ -11,6 +11,7 @@
 #include "Render/TextureAtlas.h"
 #include "Render/Image.h"
 #include "Render/Font.h"
+#include "Render/Color.h"
 #include "Exception.h"
 #include "GL/glew.h"
 #include <string>
@@ -41,6 +42,8 @@ void Renderer::init(GL gl){
 	loadTexture("gui_panel");
 	loadTexture("gui_panel2");
     loadTexture("skybox");
+
+	glAlphaFunc(GL_GREATER, 0.5);
 
 	if(glewInit() != GLEW_OK){
 		throw Exception("GLEW initialization failed!");
@@ -75,15 +78,15 @@ void Renderer::drawGame11(){
 	GLContext& gi = *context;
     Game& gin = *ex.gameInstance;
     Camera& cam = *gin.camera;
-	Player& mp = *gin.player;
+	//Player& mp = *gin.player;
 
-	float aspect = window->getWidth() / (float)window->getHeight();
+	cam.aspect = window->getWidth() / (float)window->getHeight();
 	cam.makeView();
 	cam.makeTransform();
 
 	glColor3f(1, 1, 1);
 	glMatrixMode(GL_PROJECTION);
-	glLoadMatrixd(cam.makeProjection(aspect, 90));
+	glLoadMatrixd(cam.makeProjection());
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -97,6 +100,8 @@ void Renderer::drawGame11(){
 
 	// Skybox
 	gi.enableTexture2d();
+	gi.enableVertsArray();
+	gi.enableUVsArray();
 	gi.disableDepthTesting();
 
     textures["skybox"]->bind();
@@ -107,7 +112,7 @@ void Renderer::drawGame11(){
     glDrawArrays(GL_QUADS, 0, 24);
 
 	glMatrixMode(GL_PROJECTION);
-	glLoadMatrixd(cam.makeProjection(aspect, 90));
+	glLoadMatrixd(cam.makeProjection());
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -240,17 +245,45 @@ void Renderer::drawGame11(){
 	glScalef(1, -gi.aspect, 1);
 	gi.setBlending(GL_ONE_MINUS_DST_COLOR, GL_ZERO);
 	glVertexPointer(2, GL_FLOAT, 0, crosshair_verts);
-	glDrawArrays(GL_QUADS, 0, 8);
+	glDrawArrays(GL_QUADS, 0, 8);*/
 
 	// Draw Debug Screen
+	glMatrixMode(GL_PROJECTION);
+	float ww = window->getWidth();
+	float wh = window->getHeight();
+	float hw = window->getWidth() / 2.0f;
+	float hh = window->getHeight() / 2.0f;
+	glLoadMatrixf(mat4<float>::ortho(-hw, hw, hh, -hh, -1, 1));
+	glTranslatef(-hw, -hh, 0);
+
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+	gi.disableFaceCulling();
 	gi.disableBlending();
-	if(mp.infoScreen){
-		gi.enableAlphaTesting();
+	gi.disableDepthTesting();
+ 	gi.enableAlphaTesting();
+
+	glScalef(font->charWidth * 2, font->charHeight * 2, 1);
+	font->drawShadowString(gi, getDebugText(), {1, 1, 1}, {.5, .5, .5}, 0.1, 0.1);
+	glLoadIdentity();
+
+	if(gin.chatOpen){
+		gi.disableTexture2d();
+		glColor3f(0.4, 0.4, 0.4);
+		glBegin(GL_QUADS);
+		glVertex2f(5, wh - 5);
+		glVertex2f(ww - 10, wh - 5);
+		glVertex2f(ww - 10, wh - 35);
+		glVertex2f(5, wh - 35);
+		glEnd();
+
 		gi.enableTexture2d();
-		glTranslatef(-1, -1.0/gi.aspect, 0);
-		glScalef(font->aspect*0.03, 0.03, 1);
-		font->drawShadowString(getDebugText(), {1, 1, 1, 1}, {0.75, 0.75, 0.75, 1}, 0.1, 0.1);
-	}*/
+		glTranslatef(5, wh - 35, 0);
+		glScalef(font->charWidth * 2, font->charHeight * 2, 1);
+		font->drawShadowString(gi, gin.chatText, {1, 1, 1}, {.5, .5, .5}, 0.1, 0.1);
+	}
+
 }
 
 Shared<Texture> Renderer::loadTexture(const char* str){
@@ -267,4 +300,58 @@ Shared<TextureAtlas> Renderer::loadAtlas(const char* str, uint32 tw, uint32 th){
 	auto texture = mkShared<TextureAtlas>(tw, th);
 	texture->set(Image(path));
 	return texture;
+}
+
+std::string Renderer::getDebugText(){
+	//Explorer& cb = explorer;
+	//Camera& cm = *cb.game->camera;
+	//MainPlayer& mp = *cb.game->mainPlayer;
+	//const char* face = getFaceName(mp.selectedBlockFace);
+	//const char* facing = getFacingDirection(cm.rot.x);
+	////const double _ftime = 100.0L / cb.avgFrameTime;
+	//const float bmem = cb.game->world->sliceMap.size() * 24 * 24 * 24 / 1024.0 / 1024.0;
+
+	//uint64 vmemBytes = 0;
+	//for(Slice* slice : cb.game->world->slices){
+	//	vmemBytes += slice->vertsAlloc * (12 + 8 + 3 + 3);
+	//}
+	//const float mb = 1024 * 1024;
+	//const float vmem = vmemBytes / mb;
+	//const int cx = floor(mp.pos.x / 24.0);
+	//const int cz = floor(mp.pos.z / 24.0);
+
+	#ifdef RELEASE
+		#define EXPLORER_BUILD_STR "r" EXPLORER_MONTH EXPLORER_DAY EXPLORER_RELEASE_INDEX
+	#elif DEBUG
+		#define EXPLORER_BUILD_STR "Debug"
+	#else
+		#define EXPLORER_BUILD_STR "DevR" EXPLORER_MONTH EXPLORER_DAY EXPLORER_RELEASE_INDEX
+	#endif
+
+	char title[512];
+	snprintf(title, 511, "Explorer Alpha v%i.%i.%i %s"
+		//"\nFPS: $a%i\n"
+		//"\n$rP: $a%.2f $r/ $a%.2f $r/ $a%.2f $r[$a%i$r, $a%i$r]"
+		//"\n$rV: $a%.2f $r/ $a%.2f $r/ $a%.2f"
+		//"\n$rL: $a%.2f $r/ $a%.2f$r: [$a%s$r]"
+		//"\n$rS: $a%i $r/ $a%i $r/ $a%i $r[$a%s$r]"
+		//"\n"
+		//"\n$rRS: $a%i$r, SS: $a%i$r/$a%i"
+		//"\n"
+		//"\n$rFrT: $a%.2fms"
+		//"\n$rRe:$a%6.2f%%"
+		//"\n$rUp:$a%6.2f%%"
+		////"\n$rSu:$a%6.2f%%"
+		//"\n$rEv:$a%6.2f%%"
+		//"\n$rVBMem: $a%.2fMiB, %.2fMiB",
+		, 0, 0, 0, ""
+		//cb.fps,
+		//mp.pos.x, mp.pos.y, mp.pos.z, cx, cz, mp.speed.x, mp.speed.y, mp.speed.z,
+		//cm.rot.x, cm.rot.y, facing, mp.selectedBlock.x, mp.selectedBlock.y, mp.selectedBlock.z, face,
+		//fRenderedSlices, fShadowedSlices, fSlicesOnDepth,
+		//cb.avgFrameTime * 1000.0, cb.avgRenderTime * _ftime,
+		//cb.avgUpdateTime * _ftime, cb.avgStableTime * _ftime,  cb.avgEventTime * _ftime,
+		//bmem, vmem
+		);
+	return std::string(title);
 }

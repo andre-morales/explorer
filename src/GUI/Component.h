@@ -1,16 +1,16 @@
 #pragma once
+#include "Render/Color.h"
+#include "Event/KeyEvent.h"
+#include "ilib/mem.h"
+#include "ilib/Math/vec2.h"
+#include "ilib/Math/vec4.h"
 #include <vector>
 #include <functional>
 #include <string>
-#include "ilib/mem.h"
-#include "Math/vec2.h"
-#include "Math/vec4.h"
-#include "Render/Color.h"
-#include "Event/KeyEvent.h"
 class GLWindow;
 class GUI;
-class Panel;
 class Texture;
+class Sprite;
 class Font;
 struct MouseButtonEvent;
 struct MouseMotionEvent;
@@ -19,31 +19,24 @@ class GLContext;
 struct KeyEvent;
 struct MouseButtonEvent;
 struct MouseMotionEvent;
-enum class ScalingMode {
-	STRETCH, SPRITE, MINIMUM,
-	MAXIMUM_TOP_LEFT,    MAXIMUM_TOP_CENTER,    MAXIMUM_TOP_RIGHT,
-	MAXIMUM_MIDDLE_LEFT, MAXIMUM_MIDDLE_CENTER, MAXIMUM_MIDDLE_RIGHT,
-	MAXIMUM_BOTTOM_LEFT, MAXIMUM_BOTTOM_CENTER, MAXIMUM_BOTTOM_RIGHT,
-};
+
 class Component {
 public:
-	Panel* parent;
+	Component* parent;
 	std::vector<Shared<Component>> children;
-	std::string text;
-
 	float x = 0, y = 0;
-	float width = 1, height = 1;
+	float width = 0, height = 0;
 	vec4f insets;
 	bool visible, enabled;
-	bool focused, focusable;
+	bool focused;
 
-	Shared<Font> font;
+	std::string text;
 	Color bgColor, fgColor;
 
 	vec4f spriteBorders;
 	bool background;
-	ScalingMode bgScaling;
-	Shared<Texture> bgTexture;
+
+	Shared<Sprite> bgSprite;
 
 	using KeyListener = std::function<void(const KeyEvent&)>;
 	using MouseButtonListener = std::function<void(const MouseButtonEvent&)>;
@@ -63,12 +56,15 @@ public:
 	virtual void paintComponent(GLContext&, vec2f);
 	virtual void paintChildren(GLContext&, vec2f);
 
-	virtual void setFont(Shared<Font>);
-	void setBackgroundColor(Color);
-	void setBackgroundTexture(Shared<Texture>);
+
+	void setBackground(Color);
+    void setBackground(Shared<Texture>);
+	void setBackground(Shared<Sprite>);
 	virtual void setBounds(float, float, float, float);
+	vec4f getBounds();
 	vec2f getPosition();
 
+    // Add / Fire / Remove Listeners
 	MouseButtonListener* addMouseButtonListener(MouseButtonListener, bool = false);
 	void fireMouseButtonListeners(const MouseButtonEvent&, bool = false);
 	void removeMouseButtonListener(MouseButtonListener*, bool);
@@ -84,6 +80,8 @@ public:
 	SizeListener* addSizeListener(SizeListener);
 	void fireSizeListeners(float, float);
 	void removeSizeListener(SizeListener*);
+protected:
+    bool focusable;
 private:
-	friend class GUI;
+    friend class GUI;
 };

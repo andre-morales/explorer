@@ -15,6 +15,19 @@
 					<Add option="-g" />
 				</Compiler>
 			</Target>
+			<Target title="Fast x64">
+				<Option output="out/Fast_64/Explorer" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Fast_64/" />
+				<Option type="1" />
+				<Option compiler="mingw_x64_810_posix_sjlj" />
+				<Option use_console_runner="0" />
+				<Compiler>
+					<Add option="-O0" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
 			<Target title="Release x64">
 				<Option output="dist64/Explorer" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj/Release_64/" />
@@ -45,6 +58,16 @@
 		</Linker>
 		<Unit filename="ext/ilib/IO/Stream.cpp" />
 		<Unit filename="ext/ilib/IO/Stream.h" />
+		<Unit filename="ext/ilib/Math/mat4.h" />
+		<Unit filename="ext/ilib/Math/maths.cpp" />
+		<Unit filename="ext/ilib/Math/maths.h" />
+		<Unit filename="ext/ilib/Math/noise.cpp" />
+		<Unit filename="ext/ilib/Math/noise.h" />
+		<Unit filename="ext/ilib/Math/prng.cpp" />
+		<Unit filename="ext/ilib/Math/prng.h" />
+		<Unit filename="ext/ilib/Math/vec2.h" />
+		<Unit filename="ext/ilib/Math/vec3.h" />
+		<Unit filename="ext/ilib/Math/vec4.h" />
 		<Unit filename="ext/ilib/Net/ASocket.cpp" />
 		<Unit filename="ext/ilib/Net/ASocket.h" />
 		<Unit filename="ext/ilib/Net/BufferedSocket.cpp" />
@@ -90,6 +113,10 @@
 		<Unit filename="src/GUI/Event/MouseMotionEvent.h" />
 		<Unit filename="src/GUI/GUI.cpp" />
 		<Unit filename="src/GUI/GUI.h" />
+		<Unit filename="src/GUI/Sprite.cpp" />
+		<Unit filename="src/GUI/Sprite.h" />
+		<Unit filename="src/GUI/Text.cpp" />
+		<Unit filename="src/GUI/Text.h" />
 		<Unit filename="src/Game/Block.cpp" />
 		<Unit filename="src/Game/Block.h" />
 		<Unit filename="src/Game/BlockInfo.cpp" />
@@ -106,16 +133,6 @@
 		<Unit filename="src/Game/Player.h" />
 		<Unit filename="src/Game/Universe.cpp" />
 		<Unit filename="src/Game/Universe.h" />
-		<Unit filename="src/Math/mat4.h" />
-		<Unit filename="src/Math/maths.cpp" />
-		<Unit filename="src/Math/maths.h" />
-		<Unit filename="src/Math/noise.cpp" />
-		<Unit filename="src/Math/noise.h" />
-		<Unit filename="src/Math/prng.cpp" />
-		<Unit filename="src/Math/prng.h" />
-		<Unit filename="src/Math/vec2.h" />
-		<Unit filename="src/Math/vec3.h" />
-		<Unit filename="src/Math/vec4.h" />
 		<Unit filename="src/Net/Packet.cpp" />
 		<Unit filename="src/Net/Packet.h" />
 		<Unit filename="src/Render/Color.cpp" />

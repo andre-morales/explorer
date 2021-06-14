@@ -23,7 +23,12 @@ void TextureAtlas::getTileUV(uint16 xy, float* u, float* v){
 	*v = y * tileHeight / height;
 }
 
-void TextureAtlas::getTileSize(float* w, float* h){
+void TextureAtlas::getTileSize(uint32* w, uint32* h){
+	if(w != nullptr) *w = tileWidth;
+	if(h != nullptr) *h = tileHeight;
+}
+
+void TextureAtlas::getTileScale(float* w, float* h){
 	if(w != nullptr) *w = tileWidth / (float)width;
 	if(h != nullptr) *h = tileHeight / (float)height;
 }

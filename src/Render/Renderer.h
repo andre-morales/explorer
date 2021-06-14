@@ -31,5 +31,6 @@ public:
 	Shared<Texture> loadTexture(const char*);
 	Shared<TextureAtlas> loadAtlas(const char*, uint32, uint32);
 private:
+	std::string getDebugText();
     void drawGame11();
 };

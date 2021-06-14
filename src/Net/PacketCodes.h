@@ -1,6 +1,8 @@
 #pragma once
 
 enum class PacketCodes {
-	JOIN = 42,
-	CHUNK_REQUEST = 1,
+	HANDSHAKE = 1,
+	JOIN = 2,
+	CHUNK_REQUEST = 3,
+	CHAT_MSG = 4
 };

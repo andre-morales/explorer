@@ -16,6 +16,16 @@
 					<Add option="-DEXPLORER_SERVER" />
 				</Compiler>
 			</Target>
+			<Target title="Fast x64">
+				<Option output="out/Server_Fast_64/ExplorerServer" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Server_Fast_64/" />
+				<Option type="1" />
+				<Option compiler="mingw_x64_810_posix_sjlj" />
+				<Compiler>
+					<Add option="-O0" />
+					<Add option="-DEXPLORER_SERVER" />
+				</Compiler>
+			</Target>
 			<Target title="Release x64">
 				<Option output="server64/ExplorerServer" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj/Server_Release_64/" />
@@ -42,6 +52,16 @@
 		</Linker>
 		<Unit filename="ext/ilib/IO/Stream.cpp" />
 		<Unit filename="ext/ilib/IO/Stream.h" />
+		<Unit filename="ext/ilib/Math/mat4.h" />
+		<Unit filename="ext/ilib/Math/maths.cpp" />
+		<Unit filename="ext/ilib/Math/maths.h" />
+		<Unit filename="ext/ilib/Math/noise.cpp" />
+		<Unit filename="ext/ilib/Math/noise.h" />
+		<Unit filename="ext/ilib/Math/prng.cpp" />
+		<Unit filename="ext/ilib/Math/prng.h" />
+		<Unit filename="ext/ilib/Math/vec2.h" />
+		<Unit filename="ext/ilib/Math/vec3.h" />
+		<Unit filename="ext/ilib/Math/vec4.h" />
 		<Unit filename="ext/ilib/Net/ASocket.cpp" />
 		<Unit filename="ext/ilib/Net/ASocket.h" />
 		<Unit filename="ext/ilib/Net/BufferedSocket.cpp" />
@@ -71,16 +91,6 @@
 		<Unit filename="src/Game/Player.h" />
 		<Unit filename="src/Game/Universe.cpp" />
 		<Unit filename="src/Game/Universe.h" />
-		<Unit filename="src/Math/mat4.h" />
-		<Unit filename="src/Math/maths.cpp" />
-		<Unit filename="src/Math/maths.h" />
-		<Unit filename="src/Math/noise.cpp" />
-		<Unit filename="src/Math/noise.h" />
-		<Unit filename="src/Math/prng.cpp" />
-		<Unit filename="src/Math/prng.h" />
-		<Unit filename="src/Math/vec2.h" />
-		<Unit filename="src/Math/vec3.h" />
-		<Unit filename="src/Math/vec4.h" />
 		<Unit filename="src/Net/Packet.cpp" />
 		<Unit filename="src/Net/Packet.h" />
 		<Unit filename="src/Server/Server.cpp" />

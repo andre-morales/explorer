@@ -6,7 +6,7 @@
 #include "Game/Planet.h"
 #include "Game/Block.h"
 #include "Game/BlockInfo.h"
-#include "Math/vec3.h"
+#include "ilib/Math/vec3.h"
 #include <vector>
 
 #ifndef EXPLORER_SERVER

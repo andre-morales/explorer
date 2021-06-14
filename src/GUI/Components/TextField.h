@@ -1,18 +1,15 @@
 #pragma once
 #include "GUI/Component.h"
-class Label;
+#include "GUI/Text.h"
+
 class GLContext;
 
-class TextField : public Component {
+class TextField : public Component, public Text {
 public:
-	std::string placeHolder;
-
 	TextField();
 	TextField(const std::string&);
-	void setPlaceHolder(const std::string&);
+	~TextField();
+
 	virtual void setBounds(float, float, float, float) override;
-	virtual void setFont(Shared<Font>) override;
 	virtual void paintComponent(GLContext&, vec2f) override;
-private:
-	std::shared_ptr<Label> lblText;
 };

@@ -1,6 +1,7 @@
 #pragma once
 #include "ilib/mem.h"
 #include <functional>
+#include <string>
 
 class Explorer;
 class BufferedSocket;
@@ -19,9 +20,19 @@ public:
 	Game(Explorer&);
 	~Game();
 
+	bool chatOpen = false;
+	std::string chatText = "";
+
+	void sendChatMessage();
 	void initInput();
 	void join();
+	void update();
 private:
+	bool chatOpening = false;
+
     double lastMX, lastMY;
+    void* mouseButtonListener;
     void* mouseMotionListener;
+    void* keyListener;
+    void* charListener;
 };

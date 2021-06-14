@@ -12,11 +12,13 @@ public:
 	using MouseButtonListener = std::function<void(int, int, int)>;
 	using MouseMotionListener = std::function<void(double, double)>;
 	using KeyListener = std::function<void(int, int, int, int)>;
+	using CharListener = std::function<void(unsigned int)>;
 
 	std::vector<FrameSizeListener*> frameSizeListeners;
 	std::vector<MouseButtonListener*> mouseButtonListeners;
 	std::vector<MouseMotionListener*> mouseMotionListeners;
 	std::vector<KeyListener*> keyListeners;
+	std::vector<CharListener*> charListeners;
 
 	GLFWwindow* handle;
 
@@ -59,6 +61,9 @@ public:
 
 	KeyListener* addKeyListener(KeyListener);
 	void removeKeyListener(KeyListener*);
+
+	CharListener* addCharListener(CharListener);
+	void removeCharListener(CharListener*);
 
 	static void fireEvents();
 	static Window* getWindow(GLFWwindow*);

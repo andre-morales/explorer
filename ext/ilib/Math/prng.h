@@ -1,7 +1,7 @@
 #pragma once
-#include <ilib/types.h>
-class PRNG {
-public:
+#include "ilib/types.h"
+
+struct PRNG {
 	uint64 seed;
 	uint64 curseed;
 

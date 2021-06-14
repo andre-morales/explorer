@@ -84,7 +84,7 @@ template <class T> union mat4 {
 		T a00 = m00;
 		T a10 = m10;
 		T a20 = m20;
-		T a30 = m30;
+		//T a30 = m30;
 		m00 = m00 * m.m00 + m10 * m.m01 + m20 * m.m02 + m30 * m.m03;
 		m10 = a00 * m.m10 + m10 * m.m11 + m20 * m.m12 + m30 * m.m13;
 		m20 = a00 * m.m20 + a10 * m.m21 + m20 * m.m22 + m30 * m.m23;
@@ -93,7 +93,7 @@ template <class T> union mat4 {
 		T a01 = m01;
 		T a11 = m11;
 		T a21 = m21;
-		T a31 = m31;
+		//T a31 = m31;
 		m01 = m01 * m.m00 + m11 * m.m01 + m21 * m.m02 + m31 * m.m03;
 		m11 = a01 * m.m10 + m11 * m.m11 + m21 * m.m12 + m31 * m.m13;
 		m21 = a01 * m.m20 + a11 * m.m21 + m21 * m.m22 + m31 * m.m23;
@@ -102,7 +102,7 @@ template <class T> union mat4 {
 		T a02 = m02;
 		T a12 = m12;
 		T a22 = m22;
-		T a32 = m32;
+		//T a32 = m32;
 		m02 = m02 * m.m00 + m12 * m.m01 + m22 * m.m02 + m32 * m.m03;
 		m12 = a02 * m.m10 + m12 * m.m11 + m22 * m.m12 + m32 * m.m13;
 		m22 = a02 * m.m20 + a12 * m.m21 + m22 * m.m22 + m32 * m.m23;
@@ -111,7 +111,7 @@ template <class T> union mat4 {
 		T a03 = m03;
 		T a13 = m13;
 		T a23 = m23;
-		T a33 = m33;
+		//T a33 = m33;
 		m03 = m03 * m.m00 + m13 * m.m01 + m23 * m.m02 + m33 * m.m03;
 		m13 = a03 * m.m10 + m13 * m.m11 + m23 * m.m12 + m33 * m.m13;
 		m23 = a03 * m.m20 + a13 * m.m21 + m23 * m.m22 + m33 * m.m23;

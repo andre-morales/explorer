@@ -1,6 +1,7 @@
 #include "Window.h"
 #include "Exception.h"
 #include "GLFW/glfw3.h"
+#include <iostream>
 
 Window::Window()
 : Window(640, 480, "Window"){}
@@ -47,7 +48,7 @@ void Window::create(){
 	});
 	glfwSetMouseButtonCallback(handle, [](GLFWwindow* gwin, int btn, int act, int mods){
 		Window& win = *getWindow(gwin);
-		for(auto& f : win.mouseButtonListeners){ (*f)(btn, act, mods); }
+		for(auto& f : win.mouseButtonListeners){ (*f)(btn, act, mods);}
 	});
 	glfwSetCursorPosCallback(handle, [](GLFWwindow* gwin, double x, double y){
 		Window& win = *getWindow(gwin);
@@ -56,6 +57,10 @@ void Window::create(){
 	glfwSetKeyCallback(handle, [](GLFWwindow* gwin, int key, int scan, int act, int mods){
 		Window& win = *getWindow(gwin);
 		for(auto& f : win.keyListeners){(*f)(key, scan, act, mods); }
+	});
+	glfwSetCharCallback(handle, [](GLFWwindow* gwin, unsigned int chr){
+		Window& win = *getWindow(gwin);
+		for(auto& f : win.charListeners){(*f)(chr); }
 	});
 }
 
@@ -189,6 +194,23 @@ void Window::removeKeyListener(KeyListener* listener){
 	}
 	throw Exception("Trying to remove a KeyListener that doesn't exist!");
 }
+
+Window::CharListener* Window::addCharListener(CharListener listener){
+	CharListener* kl = new CharListener(listener);
+	charListeners.emplace_back(kl);
+	return kl;
+}
+void Window::removeCharListener(CharListener* listener){
+	for(auto it = charListeners.begin(); it != charListeners.end(); ++it){
+		if(*it == listener){
+			charListeners.erase(it);
+			return;
+		}
+	}
+	throw Exception("Trying to remove a CharListener that doesn't exist!");
+}
+
+
 
 Window* Window::getWindow(GLFWwindow* handle){
 	return (Window*)glfwGetWindowUserPointer(handle);

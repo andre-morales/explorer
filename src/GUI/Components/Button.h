@@ -1,10 +1,11 @@
 #pragma once
 #include "GUI/Component.h"
+#include "GUI/Text.h"
 #include "GUI/Event/ActionEvent.h"
 #include <string>
 #include <functional>
 
-class Button : public Component {
+class Button : public Component, public Text {
 public:
 	using ActionListener = std::function<void(const ActionEvent&)>;
 	std::vector<ActionListener> actionListeners;

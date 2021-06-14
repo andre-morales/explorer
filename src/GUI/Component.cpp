@@ -1,9 +1,10 @@
 #include "Component.h"
-#include "GL/glew.h"
-#include "Exception.h"
+#include "GUI/Sprite.h"
 #include "Render/GLContext.h"
 #include "Render/Texture.h"
 #include "Render/Geometry.h"
+#include "Exception.h"
+#include "GL/glew.h"
 #include <iostream>
 
 Component::Component(){
@@ -16,9 +17,6 @@ Component::Component(){
 	this->bgColor = {1, 1, 1, 1};
 	this->fgColor = {1, 1, 1, 1};
 	this->spriteBorders = {0, 0, 0, 0};
-	this->font = nullptr;
-	this->bgTexture = nullptr;
-	this->bgScaling = ScalingMode::STRETCH;
 }
 Component::~Component(){}
 
@@ -51,7 +49,7 @@ void Component::paintComponent(GLContext& gi, vec2f anch){
 			gi.disableBlending();
 		}
 
-		if(!bgTexture){
+		if(!bgSprite){
 			gi.disableTexture2d();
 			const float verts[] = {
 				ax, ay,
@@ -63,69 +61,30 @@ void Component::paintComponent(GLContext& gi, vec2f anch){
 			glVertexPointer(2, GL_FLOAT, 0, verts);
 			glDrawArrays(GL_QUADS, 0, 4);
 		} else {
+		    auto& texture = *bgSprite->texture;
+
 			gi.enableTexture2d();
 			gi.enableUVsArray();
-			bgTexture->bind();
+			texture.bind();
 			const float cverts[] = {
 				ax, ay,
 				ax+aw, ay,
 				ax+aw, ay+ah,
 				ax, ay+ah
 			};
-			switch(bgScaling) {
+			switch(bgSprite->scalingMode) {
 			default:
 			case ScalingMode::STRETCH:
 				glTexCoordPointer(2, GL_FLOAT, 0, Quad::uvs);
 				glVertexPointer(2, GL_FLOAT, 0, cverts);
 				glDrawArrays(GL_QUADS, 0, 4);
 				break;
-			case ScalingMode::MAXIMUM_TOP_LEFT: {
-				/*float as = aspect * aw/ah;
-				float f = fmin(1/as, 1);
-				const float uvs[] = {
-					0   , 0,
-					as*f, 0,
-					as*f, f,
-					0   , f,
-				};
-				glTexCoordPointer(2, GL_FLOAT, 0, uvs);
-				glVertexPointer(2, GL_FLOAT, 0, cverts);
-				glDrawArrays(GL_QUADS, 0, 4);*/
-				}
-				break;
-			case ScalingMode::MAXIMUM_MIDDLE_CENTER: {
-				/*const float* uvs;
-				float as = aspect * aw/ah;
-				//float sw = gi.width;
-				//float sh = gi.height;
-				if(as > 1/as){
-					const float _uvs[] = {
-						0, .5f - .5f/as,
-						1, .5f - .5f/as,
-						1, .5f + .5f/as,
-						0, .5f + .5f/as,
-					};
-					uvs = _uvs;
-				} else {
-					const float _uvs[] = {
-						.5f+.5f*as, 0,
-						.5f-.5f*as, 0,
-						.5f-.5f*as, 1,
-						.5f+.5f*as, 1,
-					};
-					uvs = _uvs;
-				}
-				glTexCoordPointer(2, GL_FLOAT, 0, uvs);
-				glVertexPointer(2, GL_FLOAT, 0, cverts);
-				glDrawArrays(GL_QUADS, 0, 4);*/
-				}
-				break;
 			case ScalingMode::SPRITE: {
 				const vec4f& sb = spriteBorders;
-				float lsw = sb.left * bgTexture->width ;
-				float rsw = sb.right * bgTexture->width;
-				float tsh = sb.top * bgTexture->height ;
-				float bsh = sb.bottom * bgTexture->height;
+				float lsw = sb.left * texture.width ;
+				float rsw = sb.right * texture.width;
+				float tsh = sb.top * texture.height ;
+				float bsh = sb.bottom * texture.height;
 
 				const float verts[] = {
 					// Left Top
@@ -253,17 +212,21 @@ void Component::paintChildren(GLContext& c, vec2f anch){
 	}
 }
 
-void Component::setBackgroundColor(Color c){
+void Component::setBackground(Color c){
 	this->bgColor = c;
 }
 
-void Component::setBackgroundTexture(Shared<Texture> tex){
-	this->bgTexture = tex;
+void Component::setBackground(Shared<Texture> tex){
+	this->bgSprite = mkShared<Sprite>(tex);
 }
 
-void Component::setFont(Shared<Font> font){
-	this->font = font;
+void Component::setBackground(Shared<Sprite> sprite){
+	this->bgSprite = sprite;
 }
+
+//void Component::setFont(Shared<Font> font){
+//	this->font = font;
+//}
 
 void Component::setBounds(float x, float y, float w, float h){
 	bool fire = false;
@@ -277,6 +240,10 @@ void Component::setBounds(float x, float y, float w, float h){
 	if(fire){
 		fireSizeListeners(w, h);
 	}
+}
+
+vec4f Component::getBounds(){
+    return {x, y, width, height};
 }
 
 vec2f Component::getPosition(){
