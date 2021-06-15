@@ -45,6 +45,7 @@
 		<Compiler>
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
+			<Add option="-DEXPLORER_CLIENT" />
 			<Add directory="src" />
 			<Add directory="ext" />
 		</Compiler>

@@ -56,8 +56,8 @@ public:
 	virtual void paintComponent(GLContext&, vec2f);
 	virtual void paintChildren(GLContext&, vec2f);
 
-
-	void setBackground(Color);
+	void setBackground(bool);
+	void setBackground(const Color&);
     void setBackground(Shared<Texture>);
 	void setBackground(Shared<Sprite>);
 	virtual void setBounds(float, float, float, float);

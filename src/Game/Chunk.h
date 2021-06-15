@@ -5,33 +5,46 @@
 
 class Chunk {
 public:
-    typedef Block ChunkData[24][24][24];
+	enum class State {
+		EMPTY,
+		REQUESTED, RECEIVING, COMPLETE, BATCHED
+	} state;
 
-    Planet* planet;
-    ChunkData* blocks;
-    uint64 id;
-    int32 cx, cy, cz;
+	typedef Block ChunkData[24][24][24];
 
-    uint32 allocatedVerts;
-    uint32 batchedVertsLen;
-    float* batchedVerts;
-    float* genVertsP;
+	Planet* planet;
+	ChunkData* blocks;
+	uint64 id;
+	int32 cx, cy, cz;
 
-    float* batchedUVs;
-    float* genUVsP;
+	#ifdef EXPLORER_CLIENT
+	uint32 allocatedVerts = 0;
+	uint32 batchedVertsLen = 0;
+	float* batchedVerts = nullptr;
+	float* genVertsP = nullptr;
+
+	float* batchedUVs = nullptr;
+	float* genUVsP = nullptr;
+
+	byte* batchedColors = nullptr;
+	byte* genColorsP = nullptr;
+	#endif
 
 	Chunk(Planet*, int32, int32, int32);
 	~Chunk();
 
+	void gen();
+
+	#ifdef EXPLORER_CLIENT
 	void addVertexAlloc();
 	void addVertexAlloc(int);
-	void gen();
 	void batch();
+	#endif
 private:
-
-
-    bool sNotAir(int32, int32, int32);
+	#ifdef EXPLORER_CLIENT
+	bool sNotAir(int32, int32, int32);
 	bool sOpaque(int32, int32, int32);
 	float sOpaqueness(int32, int32, int32);
-    void addFace(byte, byte, byte, byte, byte);
+	void addFace(byte, byte, byte, byte, byte);
+	#endif
 };

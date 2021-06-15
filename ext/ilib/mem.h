@@ -7,7 +7,7 @@ template<class T> using Weak = std::weak_ptr<T>;
 
 template<class T, class... Args>
 Unique<T> mkUnique(Args&&... args){
-	return std::make_unique<T>(args...);
+	return std::unique_ptr<T>(new T(args...));
 }
 
 template<class T, class... Args>

@@ -7,7 +7,7 @@ Window::Window()
 : Window(640, 480, "Window"){}
 
 Window::Window(int w, int h, const char* t)
-: width(w), height(h), title(t), glSetting(GL::V1_1){}
+: glSetting(GL::V1_1), width(w), height(h), title(t){}
 
 Window::~Window(){
 

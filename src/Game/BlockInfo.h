@@ -3,13 +3,15 @@
 #include "ilib/types.h"
 
 struct BlockInfo {
-    std::string name;
-	byte id;
-	float opaqueness;
-	byte topTexId;
-	byte sidesTexId;
-	byte bottomTexId;
-	bool opaque;
+    std::string name; // Block name.
+	byte id;          // Numeric id.
+	float opaqueness; // How much shadow it casts on its sides.
+	bool opaque;      // Hides other blocks if true.
+	byte topTexId;    // Top texture.
+	byte sidesTexId;  // Side texture.
+	byte bottomTexId; // Bottom texture.
 
-	//BlockInfo(std::string, byte, float, byte, byte, byte);
+	BlockInfo();
+	BlockInfo(std::string, byte, float, byte);
+	BlockInfo(std::string, byte, float, byte, byte, byte);
 };

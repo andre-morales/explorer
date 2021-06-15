@@ -16,5 +16,5 @@ public:
 	Instance();
 	~Instance();
 
-	void registerBlock(byte);
+	void registerBlock(BlockInfo);
 };

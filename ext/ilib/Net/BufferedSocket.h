@@ -18,7 +18,8 @@ public:
 	void init(uint32);
 	int write(const byte*, int);
 	int read(byte*, int);
-	int available();
+	void clearup();
+	uint32 available();
 
 private:
     bool initialized;

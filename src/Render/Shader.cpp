@@ -1,4 +1,4 @@
-#include "Shader.h"
+/*#include "Shader.h"
 #include <sstream>
 #include <fstream>
 #include <cstring>
@@ -194,4 +194,4 @@ void Shader::setConstant(const std::string& constant, bool value){
 void Shader::unsetConstant(const std::string& constant){
 	constants.erase(constant);
 	dirty = true;
-}
+}*/

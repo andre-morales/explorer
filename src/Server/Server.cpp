@@ -3,14 +3,15 @@
 #include "Net/Packet.h"
 #include "Net/PacketCodes.h"
 #include "ilib/Net/TcpServer.h"
-#include "ilib/Net/Socket.h"
 #include "ilib/Net/ASocket.h"
+#include "ilib/Net/Socket.h"
 #include "ilib/Net/SocketException.h"
+#include "ilib/IO/Stream.h"
 #include <iostream>
-#include <thread>
-#include <vector>
+#include <cstring>
 
 int main(){
+    std::cout << "Starting up...\n";
     Server* sv = new Server();
     sv->init();
     sv->run();
@@ -40,36 +41,60 @@ std::string tosdtr(byte* ptr, int len){
 	}
 	return a;
 }
+
+void printPacket(const Packet& packet){
+    std::cout << "Packet(" << packet.opcode << ")[" << packet.length << "] = {" << tosdtr(packet.data, packet.length) << "}\n";
+}
+
 void Server::run(){
 	svSocket->start();
-	byte buffer[512];
-
-	std::vector<std::thread*> clients;
+	std::cout << "Listening for incoming connections.\n";
 
 	while(true){
-		Socket* cs = svSocket->acceptConnection();
-        std::cout << "Connection.\n";
+		auto* clientPtr = new ServerClient();
+		clientPtr->socket = svSocket->acceptConnection();
+        std::cout << "Incoming connection.\n";
+        clientPtr->thread = new std::thread([this, clientPtr](){
+            ServerClient& client = *clientPtr;
+            auto& cs = *client.socket;
+            client.socket->setBlocking(true);
 
-        auto* th = new std::thread([this, cs](){
-            cs->setBlocking(true);
-            Packet packet;
+            Packet in;
+            byte* inOpcode = (byte*)&in.opcode;
+            byte* inLength = (byte*)&in.length;
+
+            Packet out;
 
             try {
                 while(true){
-                    ASocket::spinReadEx(*cs, (byte*)&packet.opcode, 2);
-                    ASocket::spinReadEx(*cs, (byte*)&packet.length, 4);
-                    packet.data = new byte[packet.length];
-                    ASocket::spinReadEx(*cs, packet.data, packet.length);
+                    ASocket::spinReadEx(cs, inOpcode, 2);
+                    ASocket::spinReadEx(cs, inLength, 4);
+                    in.data = new byte[in.length];
+                    ASocket::spinReadEx(cs, in.data, in.length);
 
-                    switch((PacketCodes)packet.opcode){
-                    case PacketCodes::JOIN:
-                        std::cout << "Packet(" << packet.opcode << ")[" << packet.length << "] = {" << tosdtr(packet.data, packet.length) << "}\n";
+                    switch((PacketCode)in.opcode){
+                    case PacketCode::JOIN:
+                        client.name = std::string((char*)in.data, in.length);
+
+                        //out.op(PacketCode::JOIN);
+                        //out.data = (byte*)"Connected.";
+                        //out.length = strlen((char*)out.data);
+                        //out.send(cstream);
                         break;
-                    case PacketCodes::CHAT_MSG:
-                        std::cout << "Chat<>:'" << std::string((char*)packet.data, packet.length) << "'\n";
+                    case PacketCode::CHAT_MSG: {
+                        std::string message = std::string("<") + client.name + "> " + std::string((char*)in.data, in.length);
+                        out.op(PacketCode::CHAT_MSG);
+                        out.data = (byte*)message.c_str();
+                        out.length = message.length();
+
+                        std::cout << "Chat: " << message << "\n";
+                        for(auto* pl : clients){
+                            out.send(pl->socket);
+                        }
+                        }
                         break;
                     default:
-                        std::cout << "Packet(" << packet.opcode << ")[" << packet.length << "] = {" << tosdtr(packet.data, packet.length) << "}\n";
+                        printPacket(in);
                         break;
                     }
                 }
@@ -77,6 +102,6 @@ void Server::run(){
                 std::cout << "Connection closed.\n";
             }
         });
-        clients.emplace_back(th);
+        clients.emplace_back(clientPtr);
 	}
 }

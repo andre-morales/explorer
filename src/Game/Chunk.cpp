@@ -7,6 +7,7 @@
 #include "Game/Block.h"
 #include "Game/BlockInfo.h"
 #include "ilib/Math/vec3.h"
+#include <cstring>
 #include <vector>
 
 #ifndef EXPLORER_SERVER
@@ -20,31 +21,39 @@ Chunk::Chunk(Planet* pl, int32 x, int32 y, int32 z) : planet(pl){
     cy = y;
     cz = z;
     id = ((cy * 16384) + cz) * 16384 + cx;
-
-    allocatedVerts = 0;
-    batchedVertsLen = 0;
-    batchedVerts = nullptr;
-    genVertsP = nullptr;
-    batchedUVs = nullptr;
-    genUVsP = nullptr;
 }
 Chunk::~Chunk(){
 }
 
 void Chunk::gen(){
     blocks = (ChunkData*)malloc(24 * 24 * 24 * sizeof(Block));
+    memset(blocks, 1, 24 * 24 * 24 * sizeof(Block));
 
-    (*blocks)[12][12][12] = Block{1};
-    /*for(int x = 0; x < 24; x++){
-     for(int y = 0; y < 24; y++){
-        for(int z = 0; z < 24; z++){
-        (*blocks)[x][y][z] = Block{2};
-    }
-    }
-    }*/
+	//state = State::TERRAIN;
+	for(int x = 0; x < 24; x++){
+		for(int z = 0; z < 24; z++){
+			int bx = x + (cx * 24);
+			int bz = z + (cz * 24);
+
+			double np = 32;
+			double sc = 0.039196174894183;
+			double pn = planet->terrainGen.get(np+bx*sc, np+bz*sc, 0);
+			double ns = (0.7+pn) * 8;
+			uint16 n;
+			if(ns < 0) n = 0; else if(ns > 23) n = 23; else n = ns;
+			//hmap[x][z] = n;
+
+			(*blocks)[x][n][z] = Block{3};
+			for(int y = 1; y < n; y++){
+				(*blocks)[x][y][z] = Block{4};
+			}
+			(*blocks)[x][0][z] = Block{2};
+		}
+	}
 
 }
 
+#ifdef EXPLORER_CLIENT
 void Chunk::batch(){
     const std::vector<BlockInfo>& infos = planet->universe->instance->registeredBlocks;
     ChunkData& data = *blocks;
@@ -61,28 +70,28 @@ void Chunk::batch(){
 				Block& block = data[x][y][z];
 				uint8 id = block.id;
 
-				if(id!=0){
+				if(id > 1){
 					byte topBlock = (y < 23)?data[x][y + 1][z].id:1;
 					byte bottomBlock = (y > 0)?data[x][y - 1][z].id:1;
-					byte leftBlock = 0;
-					byte rightBlock = 0;
-					byte frontBlock = 0;
-					byte backBlock = 0;
+					byte leftBlock = 1;
+					byte rightBlock = 1;
+					byte frontBlock = 1;
+					byte backBlock = 1;
 
 					const auto& topInfo = infos[topBlock];
 					const auto& bottomInfo = infos[bottomBlock];
 
-					/*if(x > 0) leftBlock = data[x-1][y][z].id;
-					else if(lS) leftBlock = lS->data[23][y][z].id;
+					if(x > 0) leftBlock = data[x-1][y][z].id;
+					//else if(lS) leftBlock = lS->data[23][y][z].id;
 
 					if(x < 23) rightBlock = data[x+1][y][z].id;
-					else if(rS) rightBlock = rS->data[0][y][z].id;
+					//else if(rS) rightBlock = rS->data[0][y][z].id;
 
 					if(z < 23)frontBlock = data[x][y][z + 1].id;
-					else if(fS)frontBlock = fS->data[x][y][0].id;
+					//else if(fS)frontBlock = fS->data[x][y][0].id;
 
 					if(z > 0) backBlock = data[x][y][z - 1].id;
-					else if(bS) backBlock = bS->data[x][y][23].id;*/
+					//else if(bS) backBlock = bS->data[x][y][23].id;*/
 
                     bool top = !topInfo.opaque;
                     bool bottom = !bottomInfo.opaque;
@@ -113,6 +122,7 @@ void Chunk::addFace(byte id, byte face, byte x, byte y, byte z){
     const Instance& inst = *planet->universe->instance;
 
 	const std::vector<BlockInfo>& infos = inst.registeredBlocks;
+
 	const BlockInfo& binfo = infos[id];
 	const TextureAtlas& atlas = *inst.explorer->renderer->blockAtlas;
 
@@ -120,8 +130,8 @@ void Chunk::addFace(byte id, byte face, byte x, byte y, byte z){
 	const float uvScaleX = atlas.tileWidth / (float)atlas.width;
 	const float uvScaleY = atlas.tileHeight / (float)atlas.height;
 	float u, v;
-	/*byte of[] = {0, 0, 0, 0}; // Occlusion factor for each vertex on a face.
-	float npadY = 0;
+	byte of[] = {0, 0, 0, 0}; // Occlusion factor for each vertex on a face.
+	/*float npadY = 0;
 	float xnpadY = 0.20;
 	float znpadY = 0.40;*/
 	uint16 atWTiles = atlas.width / atlas.tileWidth;
@@ -131,7 +141,7 @@ void Chunk::addFace(byte id, byte face, byte x, byte y, byte z){
 	case 0: { // Top
 		u = binfo.topTexId % atWTiles;
 		v = binfo.topTexId / atWTiles;
-/*
+
 		float a = sOpaqueness(x,   y+1, z);
 		float b = sOpaqueness(x-1, y+1, z);
 		float c = sOpaqueness(x,   y+1, z-1);
@@ -141,13 +151,13 @@ void Chunk::addFace(byte id, byte face, byte x, byte y, byte z){
 		aofc(of+0, sOpaqueness(x-1, y+1, z-1) + a + b + c);
 		aofc(of+1, sOpaqueness(x-1, y+1, z+1) + a + b + d);
 		aofc(of+2, sOpaqueness(x+1, y+1, z+1) + a + d + e);
-		aofc(of+3, sOpaqueness(x+1, y+1, z-1) + a + c + e);*/
+		aofc(of+3, sOpaqueness(x+1, y+1, z-1) + a + c + e);
 		}
 		break;
 	case 1: {// Bottom
 		u = binfo.bottomTexId % atWTiles;
 		v = binfo.bottomTexId / atWTiles;
-/*
+
 		float a = sOpaqueness(x,   y-1, z);
 		float b = sOpaqueness(x-1, y-1, z);
 		float c = sOpaqueness(x,   y-1, z-1);
@@ -157,13 +167,13 @@ void Chunk::addFace(byte id, byte face, byte x, byte y, byte z){
 		aofc(of+0, sOpaqueness(x-1, y-1, z-1) + a + b + c);
 		aofc(of+1, sOpaqueness(x+1, y-1, z-1) + a + e + c);
 		aofc(of+2, sOpaqueness(x+1, y-1, z+1) + a + d + e);
-		aofc(of+3, sOpaqueness(x-1, y-1, z+1) + a + d + b);*/
+		aofc(of+3, sOpaqueness(x-1, y-1, z+1) + a + d + b);
 		}
 		break;
 	case 2: { // Left
 		u = binfo.sidesTexId % atWTiles;
 		v = binfo.sidesTexId / atWTiles;
-		/*npadY = xnpadY;
+		//npadY = xnpadY;
 		float a = sOpaqueness(x-1, y,   z);
 		float b = sOpaqueness(x-1, y,   z-1);
 		float c = sOpaqueness(x-1, y+1, z);
@@ -173,13 +183,13 @@ void Chunk::addFace(byte id, byte face, byte x, byte y, byte z){
 		aofc(of+0, sOpaqueness(x-1, y+1, z-1) + a + b + c);
 		aofc(of+1, sOpaqueness(x-1, y-1, z-1) + a + b + d);
 		aofc(of+2, sOpaqueness(x-1, y-1, z+1) + a + d + e);
-		aofc(of+3, sOpaqueness(x-1, y+1, z+1) + a + c + e);*/
+		aofc(of+3, sOpaqueness(x-1, y+1, z+1) + a + c + e);
 		}
 		break;
 	case 3: { // Right
 		u = binfo.sidesTexId % atWTiles;
 		v = binfo.sidesTexId / atWTiles;
-		/*npadY = xnpadY;
+		/*npadY = xnpadY;*/
 		float a = sOpaqueness(x+1, y, z);
 		float b = sOpaqueness(x+1, y+1, z);
 		float c = sOpaqueness(x+1, y, z-1);
@@ -189,13 +199,13 @@ void Chunk::addFace(byte id, byte face, byte x, byte y, byte z){
 		aofc(of+0, sOpaqueness(x+1, y+1, z-1) + a + b + c);
 		aofc(of+1, sOpaqueness(x+1, y+1, z+1) + a + b + d);
 		aofc(of+2, sOpaqueness(x+1, y-1, z+1) + a + d + e);
-		aofc(of+3, sOpaqueness(x+1, y-1, z-1) + a + c + e);*/
+		aofc(of+3, sOpaqueness(x+1, y-1, z-1) + a + c + e);
 		}
 		break;
 	case 4: { // Back
 		u = binfo.sidesTexId % atWTiles;
 		v = binfo.sidesTexId / atWTiles;
-		/*npadY = znpadY;
+		/*npadY = znpadY;*/
 
 		float a = sOpaqueness(x, y, z+1);
 		float b = sOpaqueness(x, y-1, z+1);
@@ -206,13 +216,13 @@ void Chunk::addFace(byte id, byte face, byte x, byte y, byte z){
 		aofc(of+0, sOpaqueness(x-1, y-1, z+1) + a + b + c);
 		aofc(of+1, sOpaqueness(x+1, y-1, z+1) + a + b + d);
 		aofc(of+2, sOpaqueness(x+1, y+1, z+1) + a + d + e);
-		aofc(of+3, sOpaqueness(x-1, y+1, z+1) + a + c + e);*/
+		aofc(of+3, sOpaqueness(x-1, y+1, z+1) + a + c + e);
 		}
 		break;
 	case 5: { // Front
 		u = binfo.sidesTexId % atWTiles;
 		v = binfo.sidesTexId / atWTiles;
-		/*npadY = znpadY;
+		/*npadY = znpadY;*/
 		float a = sOpaqueness(x, y, z-1);
 		float b = sOpaqueness(x, y-1, z-1);
 		float c = sOpaqueness(x-1, y, z-1);
@@ -222,7 +232,7 @@ void Chunk::addFace(byte id, byte face, byte x, byte y, byte z){
 		aofc(of+0, sOpaqueness(x-1, y-1, z-1) + a + b + c);
 		aofc(of+1, sOpaqueness(x-1, y+1, z-1) + a + e + c);
 		aofc(of+2, sOpaqueness(x+1, y+1, z-1) + a + d + e);
-		aofc(of+3, sOpaqueness(x+1, y-1, z-1) + a + d + b);*/
+		aofc(of+3, sOpaqueness(x+1, y-1, z-1) + a + d + b);
 		}
 		break;
 	}
@@ -267,10 +277,10 @@ void Chunk::addFace(byte id, byte face, byte x, byte y, byte z){
 		*genUVsP++ = ux;
 		*genUVsP++ = uy;
 
-		/*byte cf_ = 255 - of[index];
-		*colorsP++ = cf_;
-		*colorsP++ = cf_;
-		*colorsP++ = cf_;*/
+		byte cf_ = 255 - of[index];
+		*genColorsP++ = cf_;
+		*genColorsP++ = cf_;
+		*genColorsP++ = cf_;
 	}
 	#endif // EXPLORER_SERVER
 }
@@ -286,18 +296,20 @@ void Chunk::addVertexAlloc(int n){
 
 		float* overts = this->batchedVerts;
 		float* ouvs = this->batchedUVs;
-		/*int8* onormals = this->normals;
-		byte* ocolors = this->colors;*/
+		byte* ocolors = this->batchedColors;
+		/*int8* onormals = this->normals;*/
+
 
 		this->batchedVerts = (float*)realloc(overts, allocatedVerts * 4 * 3);
 		this->batchedUVs = (float*)realloc(ouvs, allocatedVerts * 4 * 2);
-		/*this->normals = (int8*)realloc(onormals, vertsAlloc * 3);
-		this->colors = (byte*)realloc(ocolors, vertsAlloc * 3);*/
+		this->batchedColors = (byte*)realloc(ocolors, allocatedVerts * 3);
+		//this->normals = (int8*)realloc(onormals, vertsAlloc * 3);
 
 		this->genVertsP = this->batchedVerts + (genVertsP - overts);
 		this->genUVsP = this->batchedUVs + (genUVsP - ouvs);
-		/*this->normalsP = this->normals + (normalsP - onormals);
-		this->colorsP = this->colors + (colorsP - ocolors);*/
+		this->genColorsP = this->batchedColors + (genColorsP - ocolors);
+		//this->normalsP = this->normals + (normalsP - onormals);
+
 	}
 }
 
@@ -312,7 +324,13 @@ bool Chunk::sOpaque(int32 x, int32 y, int32 z){
 }
 
 float Chunk::sOpaqueness(int32 x, int32 y, int32 z){
-    return false;
-	/*return world.explorer.blocks[world.getGenBlockAt(sx*24+x, sy*24+y, sz*24+z)].opaqueness;*/
-}
+    const Instance& inst = *planet->universe->instance;
+	const std::vector<BlockInfo>& infos = inst.registeredBlocks;
 
+    if(x >= 0 && x <= 23 && y >= 0 && y <= 23 && z >= 0 && z <= 23){
+        return infos[(*blocks)[x][y][z].id].opaqueness;
+    }
+    return 1.0;
+
+}
+#endif

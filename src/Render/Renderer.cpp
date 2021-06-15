@@ -74,6 +74,8 @@ void Renderer::render(){
 }
 
 void Renderer::drawGame11(){
+	glColor3f(1, 1, 1);
+
 	Explorer& ex = explorer;
 	GLContext& gi = *context;
     Game& gin = *ex.gameInstance;
@@ -169,6 +171,7 @@ void Renderer::drawGame11(){
 	gi.setFaceCulling(false);
 	gi.enableDepthTesting();
     gi.disableAlphaTesting();
+    gi.enableColorsArray();
 	blockAtlas->bind();
 
 	// Render Slices
@@ -192,17 +195,18 @@ void Renderer::drawGame11(){
 				glTexCoordPointer(2, GL_FLOAT, 0, chunk.batchedUVs);
 
 				//if(lighting) glNormalPointer(GL_BYTE, 0, slice.normals);
-				//if(ambientOcclusion) glColorPointer(3, GL_UNSIGNED_BYTE, 0, slice.colors);
+				glColorPointer(3, GL_UNSIGNED_BYTE, 0, chunk.batchedColors);
 				glDrawArrays(GL_QUADS, 0, chunk.batchedVertsLen);
 				//slice.vertsLock.unlock();
 			/*}
 		}*/
 	}
 
+	gi.disableColorsArray();
 
 	/*gi.disableFog();
 	gi.disableColorMaterial();
-	gi.disableColorsArray();
+
 	gi.disableNormalsArray();
 	gi.disableAlphaTesting();
 	gi.disableLighting();
@@ -282,6 +286,16 @@ void Renderer::drawGame11(){
 		glTranslatef(5, wh - 35, 0);
 		glScalef(font->charWidth * 2, font->charHeight * 2, 1);
 		font->drawShadowString(gi, gin.chatText, {1, 1, 1}, {.5, .5, .5}, 0.1, 0.1);
+
+		glLoadIdentity();
+		glTranslatef(5, wh - 35 - font->charHeight * 2, 0);
+		glScalef(font->charWidth * 2, font->charHeight * 2, 1);
+		for (uint32 i = 0; i < gin.chatHistory.size(); i++) {
+            auto& msg = gin.chatHistory[i];
+            font->drawShadowString(gi, msg, {1, 1, 1}, {.5, .5, .5}, 0.1, 0.1);
+            glTranslatef(0, -1, 0);
+        }
+        glLoadIdentity();
 	}
 
 }

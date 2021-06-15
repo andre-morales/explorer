@@ -93,6 +93,7 @@
 		<Unit filename="src/Game/Universe.h" />
 		<Unit filename="src/Net/Packet.cpp" />
 		<Unit filename="src/Net/Packet.h" />
+		<Unit filename="src/Net/PacketCodes.h" />
 		<Unit filename="src/Server/Server.cpp" />
 		<Unit filename="src/Server/Server.h" />
 		<Extensions />

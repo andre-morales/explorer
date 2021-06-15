@@ -152,13 +152,14 @@ void GUI::onKey(int key, int scan, int act, int mods){
 
 
 void GUI::render(){
+	if(!root->visible) return;
+
 	glMatrixMode(GL_PROJECTION);
 	auto glc = context.lock();
 	float hw = glc->getWidth() / 2.0f;
 	float hh = glc->getHeight() / 2.0f;
 	glLoadMatrixf(mat4<float>::ortho(-hw, hw, hh, -hh, -1, 1));
 	glTranslatef(-hw, -hh, 0);
-
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();

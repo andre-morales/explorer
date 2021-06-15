@@ -3,7 +3,7 @@
 #include "Networking.h"
 #include <ilib/types.h>
 
-class Socket : Stream {
+class Socket : public Stream {
 public:
 	NetSocket nsocket;
 	Socket(NetSocket);

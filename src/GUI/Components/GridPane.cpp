@@ -29,7 +29,7 @@ void GridPane::setSpacing(float x, float y){
 void GridPane::relayout(){
 	int size = children.size();
 	if(size == 0) return;
-	
+
 	auto& in = insets;
 	float cw = width - in.left - in.right;
 	float ch = height - in.top - in.bottom;
@@ -43,6 +43,7 @@ void GridPane::relayout(){
 		float tx, ty;
 		int txi, tyi;
 		switch(orientation){
+		    default:
 			case Orientation::LR_TB:
 				txi = (i % gw);
 				tyi = (i / gw);
@@ -56,7 +57,7 @@ void GridPane::relayout(){
 				ty = in.top  + tyi * (th + vs);
 				break;
 		}
-		
+
 		comp->setBounds(tx, ty, tw, th);
 	}
 }

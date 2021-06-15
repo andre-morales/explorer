@@ -133,5 +133,5 @@ void Font::drawShadowString(GLContext& glc, const std::string& text, const Color
 		glDrawArrays(GL_QUADS, 0, 4);
 		chars++;
 	}
-	glTranslatef(-chars, -lines, 0);
+	glTranslatef(-chars + 1, -lines, 0);
 }

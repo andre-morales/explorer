@@ -1,4 +1,4 @@
-#pragma once
+/*#pragma once
 #include <ilib/types.h>
 #include <string>
 #include <unordered_map>
@@ -36,4 +36,4 @@ private:
 
 	void release();
 	bool buildShader(uint32, uint32, const std::string&);
-};
+};*/

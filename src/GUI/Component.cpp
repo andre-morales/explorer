@@ -33,15 +33,9 @@ void Component::paintComponent(GLContext& gi, vec2f anch){
 	gi.enableVertsArray();
 
 	if(background){
-		float cwidth = gi.getWidth();
-		float cheight = gi.getHeight();
-		float aspect = cwidth / cheight;
-
 		const float& ax = anch.x, ay = anch.y, aw = width, ah = height;
-
-		const float a = bgColor.a;
 		glColor4f(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
-		if(a < 0.999){
+		if(bgColor.a < 0.999){
 			gi.disableAlphaTesting();
 			gi.setBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 			gi.enableBlending();
@@ -212,7 +206,11 @@ void Component::paintChildren(GLContext& c, vec2f anch){
 	}
 }
 
-void Component::setBackground(Color c){
+void Component::setBackground(bool b){
+	this->background = b;
+}
+
+void Component::setBackground(const Color& c){
 	this->bgColor = c;
 }
 

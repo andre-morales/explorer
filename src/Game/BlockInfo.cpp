@@ -1,6 +1,11 @@
 #include "BlockInfo.h"
 
-/*BlockInfo::BlockInfo(std::string name, byte id, float opaqueness, byte topId, byte sidesId, byte botId){
+BlockInfo::BlockInfo(){}
+BlockInfo::BlockInfo(std::string name, byte id, float opaqueness, byte texId)
+: BlockInfo(name, id, opaqueness, texId, texId, texId){}
+
+
+BlockInfo::BlockInfo(std::string name, byte id, float opaqueness, byte topId, byte sidesId, byte botId){
     this->name = name;
 	this->id = id;
 	this->opaqueness = opaqueness;
@@ -9,4 +14,4 @@
 	this->sidesTexId = sidesId;
 	this->bottomTexId = botId;
 }
-*/
+

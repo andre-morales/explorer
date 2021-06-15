@@ -1,6 +1,8 @@
 #pragma once
 #include "ilib/types.h"
+#include "Net/PacketCodes.h"
 
+class Socket;
 class Stream;
 
 class Packet {
@@ -12,6 +14,8 @@ public:
 	Packet();
 	~Packet();
 
-	void send(Stream&);
-	void get(Stream&);
+	void op(PacketCode);
+	void send(Socket*);
+	void send(Stream*);
+	void get(Stream*);
 };

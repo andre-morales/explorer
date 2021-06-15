@@ -35,12 +35,21 @@ int Socket::write(const byte* data, uint32 len){
 int Socket::read(byte* buff, uint32 len){
     int br = recv(nsocket, (char*)buff, len, 0);
     if(br < 0){
-        return -1;
+        if(br == SOCKET_ERROR){
+            if(blocking){
+                auto err = WSAGetLastError();
+                throw SocketException(std::string("Socket error(" + std::to_string(err) + ")."));
+            }
+            return 0;
+        }
+
+        throw SocketException("Unknown socket error.");
     }
     return br;
 }
 
 void Socket::setBlocking(bool b){
+    blocking = b;
     u_long mode = b?0:1;
     ioctlsocket(nsocket, FIONBIO, &mode);
 }

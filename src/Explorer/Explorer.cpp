@@ -44,8 +44,8 @@ int main(){
 		std::cerr << "std::exception '" << ex.what() << "'.\n";
 	} catch(...){
 		std::cerr << "Unknown error.\n";
-		return -1;
 	}
+	getchar();
 }
 
 Explorer::Explorer(){
@@ -58,11 +58,22 @@ Explorer::~Explorer(){
 
 void Explorer::init(){
 	renderer->init(GL::V1_1);
-    renderer->begin();
-    attachedGUIs.push_back(createStartGUI());
-    explorerInstance = mkUnique<Instance>();
-    explorerInstance->explorer = this;
-    handleEventsForGUIs();
+	renderer->begin();
+	attachedGUIs.push_back(createStartGUI());
+	explorerInstance = mkUnique<Instance>();
+	explorerInstance->explorer = this;
+	explorerInstance->registerBlock({"void",   0, 1.00, 0      });
+	explorerInstance->registerBlock({"air",    1, 0.00, 0      });
+	explorerInstance->registerBlock({"stone",  2, 1.00, 1      });
+	explorerInstance->registerBlock({"grass",  3, 1.00, 2, 3, 4});
+	explorerInstance->registerBlock({"dirt",   4, 1.00, 4      });
+	explorerInstance->registerBlock({"glass",  5, 0.40, 5      });
+	explorerInstance->registerBlock({"wood",   6, 1.00, 6      });
+	explorerInstance->registerBlock({"leaves", 7, 0.60, 7      });
+	for(byte i = 8; i < 255; i++){
+        explorerInstance->registerBlock({"unknown", i, 1, 63});
+    }
+	handleEventsForGUIs();
 }
 
 void Explorer::run(){
@@ -78,11 +89,11 @@ void Explorer::run(){
 }
 
 void Explorer::update(){
-    Window::fireEvents();
+	Window::fireEvents();
 
-    if(gameInstance){
-        gameInstance->update();
-    }
+	if(gameInstance){
+		gameInstance->update();
+	}
 
 }
 
@@ -117,36 +128,33 @@ Shared<GUI> Explorer::createMainMenuGUI(){
 	exitBtn->spriteBorders = {.0625, .0625, .0625, .0625};
 	menu->add(exitBtn);
 
-	Shared<TextField> field = mkShared<TextField>("127.0.0.1");
+	auto nameField = mkShared<TextField>("Player");
+	auto field = mkShared<TextField>("127.0.0.1");
 
 	auto playBtn = mkShared<Button>("Join game...");
 	playBtn->setBackground(renderer->textures["gui_button"]);
 	playBtn->bgSprite->scalingMode = ScalingMode::SPRITE;
 	playBtn->setFont(renderer->font);
-	playBtn->addActionListener([this, field](const ActionEvent&){
+	playBtn->addActionListener([this, field, nameField](const ActionEvent&){
 		try {
-            auto* sock = new BufferedSocket(new Socket(field->text.c_str(), 3333));
-            sock->init(4096);
-            gameInstance = mkUnique<Game>(*this);
-            gameInstance->initInput();
-            gameInstance->socket = sock;
-            gameInstance->join();
+			auto* sock = new BufferedSocket(new Socket(field->text.c_str(), 3333));
+			sock->init(4096);
+			gameInstance = mkUnique<Game>(*this);
+			gameInstance->socket = sock;
+			gameInstance->name = nameField->text;
+			attachedGUIs.clear();
 
-            attachedGUIs.clear();
+			gameInstance->init();
+			gameInstance->join();
 
-            auto universe = mkShared<Universe>(explorerInstance.get());
-            auto planet = mkShared<Planet>(universe.get());
+			auto universe = mkShared<Universe>(explorerInstance.get());
+			auto planet = mkShared<Planet>(universe.get());
 
-            auto ch = new Chunk(planet.get(), 0, 0, 0);
-            ch->gen();
-            ch->batch();
-            planet->chunkSet.insert(ch);
+			universe->planets.emplace_back(planet);
+			explorerInstance->universes.emplace_back(universe);
+			gameInstance->universe = universe;
 
-            universe->planets.emplace_back(planet);
-            explorerInstance->universes.emplace_back(universe);
-            gameInstance->universe = universe;
-
-            renderer->window->holdCursor();
+			renderer->window->holdCursor();
 		}catch(...){}
 	});
 
@@ -159,6 +167,12 @@ Shared<GUI> Explorer::createMainMenuGUI(){
 	field->bgSprite->scalingMode = ScalingMode::SPRITE;
 	field->spriteBorders = {.0625, .0625, .0625, .0625};
 	menu->add(field);
+
+	nameField->setBackground(renderer->textures["gui_panel2"]);
+	nameField->setFont(renderer->font);
+	nameField->bgSprite->scalingMode = ScalingMode::SPRITE;
+	nameField->spriteBorders = {.0625, .0625, .0625, .0625};
+	menu->add(nameField);
 	return gui;
 }
 
@@ -167,7 +181,7 @@ Shared<GUI> Explorer::createStartGUI(){
 
 	auto root = mkShared<SplitPane>();
 	gui->root->add(root);
-	root->setBackground(mkShared<Texture>("res\\title_bg.png"));
+	root->setBackground(renderer->textures["title_bg"]);
 	root->bgSprite->scalingMode = ScalingMode::STRETCH;
 	root->setBackground({1, 1, 1, 1});
 	root->value = 0.35;

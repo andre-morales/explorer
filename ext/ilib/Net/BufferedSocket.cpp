@@ -41,7 +41,10 @@ std::string tostr(byte* ptr, int len){
 int BufferedSocket::read(byte* buff, int len){
      //First read all that can be read to internal buffer.
     int br = sock->read(this->buffer + writePtr, bufferSize - writePtr);
-    writePtr += br;
+    if(br > 0){
+        writePtr += br;
+    }
+
 
     // Then transfer what was requested to the provided buffer.
     if(len <= 0) return 0;
@@ -54,7 +57,13 @@ int BufferedSocket::read(byte* buff, int len){
     return len;
 }
 
-int BufferedSocket::available(){
+void BufferedSocket::clearup(){
+    memmove(buffer, buffer + readPtr, (writePtr - readPtr));
+    writePtr -= readPtr;
+    readPtr = 0;
+}
+
+uint32 BufferedSocket::available(){
     return writePtr - readPtr;
 }
 

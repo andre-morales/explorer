@@ -2,14 +2,13 @@
 #include "Game/BlockInfo.h"
 
 Instance::Instance(){
-    for(int i = 0; i < 255; i++){
-        BlockInfo bi{"", i, true, 1, 1, 1, false};
-        bi.id = i;
-        registeredBlocks.emplace_back(bi);
-    }
 }
 Instance::~Instance(){}
 
-void Instance::registerBlock(byte id){
-
+void Instance::registerBlock(BlockInfo bi){
+	int size = bi.id - registeredBlocks.size() + 1;
+	for(int i = 0; i < size; i++){
+		registeredBlocks.emplace_back(BlockInfo());
+	}
+	registeredBlocks[bi.id] = bi;
 }
