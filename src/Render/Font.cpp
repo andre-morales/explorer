@@ -5,8 +5,7 @@
 #include "Render/Geometry.h"
 #include "Render/GLContext.h"
 #include "Render/Color.h"
-#include <GL/glew.h>
-#include <string>
+#include "GL/glew.h"
 
 Font::Font(){
     aspect = 0;
@@ -39,7 +38,13 @@ void Font::drawString(GLContext& glc, const std::string& text, const Color& cl){
 					glColor4f(cl.r*0.25, cl.g*0.875, cl.b*0.25, cl.a);
 					continue;
 				case 'a':
-					glColor4f(cl.r*0.5, cl.g, cl.b*0.5, cl.a);
+					glColor4f(cl.r*0.50, cl.g*1.000, cl.b*0.50, cl.a);
+					continue;
+				case 'c':
+					glColor4f(cl.r*1.00, cl.g*0.300, cl.b*0.30, cl.a);
+					continue;
+				case 'e':
+					glColor4f(cl.r*1.00, cl.g*1.000, cl.b*0.30, cl.a);
 					continue;
 				default:
 				case 'r':

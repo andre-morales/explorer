@@ -1,0 +1,7 @@
+#pragma once
+
+enum class Orientation {
+	LEFT_TOP,    CENTER_TOP,    RIGHT_TOP,
+	LEFT_MIDDLE, CENTER_MIDDLE, RIGHT_MIDDLE,
+	LEFT_BOTTOM, CENTER_BOTTOM, RIGHT_BOTTOM,
+};

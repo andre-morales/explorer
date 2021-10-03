@@ -1,8 +1,9 @@
 #pragma once
 #include "ilib/Net/Socket.h"
-#include <ilib/mem.h>
+#include "ilib/mem.h"
 #include <thread>
 #include <vector>
+#include <string>
 
 class Instance;
 class TcpServer;
@@ -20,6 +21,7 @@ public:
 
 	Server();
 	~Server();
+
 
 	void init();
 	void run();

@@ -7,6 +7,7 @@
 #include "Render/Font.h"
 #include <string>
 #include <GL/glew.h>
+#include <functional>
 
 Button::Button() : Button("Button"){}
 Button::Button(const std::string& text){

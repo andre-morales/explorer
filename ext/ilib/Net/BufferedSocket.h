@@ -1,10 +1,11 @@
 #pragma once
 #include "Networking.h"
+#include "ilib/IO/Stream.h"
 #include <ilib/types.h>
 
 class Socket;
 
-class BufferedSocket {
+class BufferedSocket : public Stream {
 public:
 	Socket* sock;
 	byte* buffer = nullptr;
@@ -16,8 +17,8 @@ public:
 	~BufferedSocket();
 
 	void init(uint32);
-	int write(const byte*, int);
-	int read(byte*, int);
+	int write(const byte*, uint32) override;
+	int read(byte*, uint32) override;
 	void clearup();
 	uint32 available();
 

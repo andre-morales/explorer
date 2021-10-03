@@ -1,5 +1,5 @@
 #pragma once
-#include "GUI/Component.h"
+#include "GUI/Components/Component.h"
 #include "GUI/Text.h"
 #include "GUI/Event/ActionEvent.h"
 #include <string>

@@ -4,8 +4,6 @@
 #include <iostream>
 #include "SocketException.h"
 
-using namespace std;
-
 BufferedSocket::BufferedSocket(Socket* s) : sock(s){
 	writePtr = 0;
 	readPtr = 0;
@@ -21,7 +19,7 @@ void BufferedSocket::init(uint32 size){
     sock->setBlocking(false);
 }
 
-int BufferedSocket::write(const byte* data, int len){
+int BufferedSocket::write(const byte* data, uint32 len){
 	return sock->write(data, len);
 }
 
@@ -38,7 +36,7 @@ std::string tostr(byte* ptr, int len){
 	return a;
 }
 
-int BufferedSocket::read(byte* buff, int len){
+int BufferedSocket::read(byte* buff, uint32 len){
      //First read all that can be read to internal buffer.
     int br = sock->read(this->buffer + writePtr, bufferSize - writePtr);
     if(br > 0){
@@ -47,9 +45,9 @@ int BufferedSocket::read(byte* buff, int len){
 
 
     // Then transfer what was requested to the provided buffer.
-    if(len <= 0) return 0;
+    if(len == 0 || buff == nullptr) return 0;
 
-    int available = writePtr - readPtr;
+    uint32 available = writePtr - readPtr;
     if(len > available) len = available;
 
     memcpy(buff, this->buffer + readPtr, len);

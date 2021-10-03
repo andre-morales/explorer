@@ -3,8 +3,6 @@
 #include <iostream>
 #include "SocketException.h"
 
-using namespace std;
-
 Socket::Socket(NetSocket s) : nsocket(s){}
 
 Socket::Socket(const char* ipaddress, int port){
@@ -15,11 +13,14 @@ Socket::Socket(const char* ipaddress, int port){
 
 	nsocket = socket(AF_INET, SOCK_STREAM, 0);
 	if(nsocket == INVALID_SOCKET){
-		throw SocketException(string("Could not create socket. ") + to_string(WSAGetLastError()));
+		throw SocketException(std::string("Could not create socket. ") + std::to_string(WSAGetLastError()));
 	}
 
 	if (connect(nsocket, (sockaddr*)(&server), sizeof(server)) < 0){
-		throw SocketException(string("Socket connection failed. ") + to_string(WSAGetLastError()));
+		int error = WSAGetLastError();
+		std::string errstr = std::to_string(error);
+		std::string fullerr = std::string("Socket connection failed. ") + errstr;
+		throw SocketException(fullerr);
 	}
 }
 Socket::~Socket(){}
@@ -33,23 +34,23 @@ int Socket::write(const byte* data, uint32 len){
 }
 
 int Socket::read(byte* buff, uint32 len){
-    int br = recv(nsocket, (char*)buff, len, 0);
-    if(br < 0){
-        if(br == SOCKET_ERROR){
-            if(blocking){
-                auto err = WSAGetLastError();
-                throw SocketException(std::string("Socket error(" + std::to_string(err) + ")."));
-            }
-            return 0;
-        }
+	int br = recv(nsocket, (char*)buff, len, 0);
+	if(br < 0){
+		if(br == SOCKET_ERROR){
+			if(blocking){
+				auto err = WSAGetLastError();
+				throw SocketException(std::string("Socket error(" + std::to_string(err) + ")."));
+			}
+			return 0;
+		}
 
-        throw SocketException("Unknown socket error.");
-    }
-    return br;
+		throw SocketException("Unknown socket error.");
+	}
+	return br;
 }
 
 void Socket::setBlocking(bool b){
-    blocking = b;
-    u_long mode = b?0:1;
-    ioctlsocket(nsocket, FIONBIO, &mode);
+	blocking = b;
+	u_long mode = b?0:1;
+	ioctlsocket(nsocket, FIONBIO, &mode);
 }

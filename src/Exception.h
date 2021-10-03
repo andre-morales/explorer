@@ -3,13 +3,15 @@
 #include <string>
 
 struct Exception : public std::exception {
-	std::string message;
+	const std::string message;
 
-	Exception(){};
-	Exception(std::string m) : message(m){
-
-	};
-	~Exception(){}
+	Exception() : Exception("(Exception message)"){}
+	Exception(const std::string& m)
+	: std::exception(),
+	message(m){
+		
+	}
+	virtual ~Exception(){}
 
 	const char* what() const noexcept override {
 		return message.c_str();

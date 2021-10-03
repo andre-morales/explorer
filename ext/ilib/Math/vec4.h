@@ -10,7 +10,7 @@ template<class T> union vec4 {
 	struct { T _0, _1, wi, he; };
 	struct { T _2, _3, width, height; };
 
-	vec4(){}
+	vec4(): vec4(0){}
 	vec4(T v) : x(v), y(v), z(v), w(v){}
 	vec4(T x, T y, T z) : x(x), y(y), z(z), w(0){}
 	vec4(T x, T y, T z, T w) : x(x), y(y), z(z), w(w){}

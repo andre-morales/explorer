@@ -3,8 +3,8 @@
 SplitPane::SplitPane(){}
 SplitPane::~SplitPane(){}
 
-Shared<Component> SplitPane::add(Shared<Component> comp){
-	Component::add(comp);
+Shared<Component> SplitPane::add(Shared<Component> comp, int p){
+	Component::add(comp, p);
 	relayout();
 	return comp;
 }

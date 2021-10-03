@@ -58,6 +58,7 @@ public:
 	void enableNormalsArray();
 	void disableNormalsArray();
 
+	void setColorsArray(bool);
 	void enableColorsArray();
 	void disableColorsArray();
 

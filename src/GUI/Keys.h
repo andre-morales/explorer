@@ -1,0 +1,12 @@
+#define IKEY_SPACE 32
+#define IKEY_A 65
+#define IKEY_D 68
+#define IKEY_S 83
+#define IKEY_T 84
+#define IKEY_W 87
+#define IKEY_ESCAPE 256
+#define IKEY_ENTER 257
+#define IKEY_BACKSPACE 259
+#define IKEY_F1 290
+#define IKEY_F2 291
+#define IKEY_LEFT_SHIFT 340

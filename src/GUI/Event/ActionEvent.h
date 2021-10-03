@@ -1,5 +1,6 @@
 #pragma once
-struct ActionEvent {
+class ActionEvent {
+public:
 	Component* const source;
 	ActionEvent(Component* src) : source(src){}
 };

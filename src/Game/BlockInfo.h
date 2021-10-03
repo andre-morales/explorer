@@ -2,7 +2,8 @@
 #include <string>
 #include "ilib/types.h"
 
-struct BlockInfo {
+class BlockInfo {
+public:
     std::string name; // Block name.
 	byte id;          // Numeric id.
 	float opaqueness; // How much shadow it casts on its sides.

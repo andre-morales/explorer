@@ -2,7 +2,7 @@
 #include "ilib/mem.h"
 #include "ilib/types.h"
 #include "Render/GL.h"
-#include <map>
+#include "ilib/obs_map.h"
 
 class Explorer;
 class Window;
@@ -16,21 +16,26 @@ public:
     Explorer& explorer;
 	Shared<Window> window;
 	Shared<GLContext> context;
-	Shared<TextureAtlas> fontAtlas;
-	Shared<TextureAtlas> blockAtlas;
-	std::map<std::string, Shared<Texture>> textures;
+	obs_map<std::string, Shared<Texture>> textures;
 	Shared<Font> font;
+
+	bool chunkColors = true;
 
 	Renderer(Explorer&);
 	~Renderer();
 
 	void init(GL);
+	void loadResources();
 	void begin();
 	void shutdown();
 	void render();
+	void bindTexture(const char*);
+	Shared<Texture> getTexture(const char*);
+	Shared<TextureAtlas> getAtlas(const char*);
 	Shared<Texture> loadTexture(const char*);
+	Shared<Texture> loadTexture(const char*, bool, bool);
 	Shared<TextureAtlas> loadAtlas(const char*, uint32, uint32);
 private:
-	std::string getDebugText();
     void drawGame11();
+    void log(const std::string&, const std::string&);
 };

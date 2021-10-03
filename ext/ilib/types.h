@@ -1,4 +1,5 @@
 #pragma once
+typedef void* voidptr;
 typedef signed char int8;
 typedef unsigned char uint8;
 typedef signed short int int16;

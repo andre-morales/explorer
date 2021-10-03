@@ -1,5 +1,6 @@
 #include "Instance.h"
 #include "Game/BlockInfo.h"
+#include <iostream>
 
 Instance::Instance(){
 }

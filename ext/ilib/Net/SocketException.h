@@ -3,6 +3,8 @@
 #include <string>
 
 struct SocketException : public Exception {
-	SocketException(std::string m) : Exception(m){}
-	~SocketException(){}
+	SocketException(const std::string& m)
+	: Exception(m){
+		
+	}
 };

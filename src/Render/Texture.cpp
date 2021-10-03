@@ -38,7 +38,7 @@ void Texture::set(const Image& image){
 	height = image.height;
 
 	baseTexture.reset(new uint8[width * height * 4]);
-	memcpy(baseTexture.get(), image.data.get(), width * height * 4);
+	memcpy(baseTexture.get(), image.data.get(), (uint64)width * height * 4);
 
 	glTexChanged = true;
 }

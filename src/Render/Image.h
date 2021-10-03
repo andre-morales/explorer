@@ -1,11 +1,12 @@
 #pragma once
 #include "ilib/mem.h"
 #include "ilib/types.h"
+#include <string>
 
 class Image {
 public:
-	Shared<byte> data;
-	unsigned int width, height;
+	sh<byte> data;
+	uint32 width = 0, height = 0;
 
 	Image();
 	Image(const char*);

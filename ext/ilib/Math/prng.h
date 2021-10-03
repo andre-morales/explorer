@@ -1,7 +1,8 @@
 #pragma once
 #include "ilib/types.h"
 
-struct PRNG {
+class PRNG {
+public:
 	uint64 seed;
 	uint64 curseed;
 
@@ -10,5 +11,5 @@ struct PRNG {
 	uint64 gen();
 
 private:
-	PRNG(const PRNG&);
+	PRNG(const PRNG&) = delete;
 };

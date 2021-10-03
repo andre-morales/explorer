@@ -1,5 +1,5 @@
 #pragma once
-#include "GUI/Component.h"
+#include "GUI/Components/Component.h"
 
 class SplitPane : public Component {
 public:
@@ -13,7 +13,7 @@ public:
 	SplitPane();
 	~SplitPane();
 
-	Shared<Component> add(Shared<Component>) override;
+	Shared<Component> add(Shared<Component>, int = -1) override;
 	void setBounds(float, float, float, float) override;
 	void setOrientation(Orientation);
 	void setValue(float);

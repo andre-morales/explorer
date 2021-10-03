@@ -3,8 +3,8 @@
 GridPane::GridPane(){}
 GridPane::~GridPane(){}
 
-Shared<Component> GridPane::add(Shared<Component> comp){
-	Component::add(comp);
+Shared<Component> GridPane::add(Shared<Component> comp, int p){
+	Component::add(comp, p);
 	relayout();
 	return comp;
 }
@@ -31,26 +31,32 @@ void GridPane::relayout(){
 	if(size == 0) return;
 
 	auto& in = insets;
-	float cw = width - in.left - in.right;
-	float ch = height - in.top - in.bottom;
+	float fgw = width - in.left - in.right;  // Full grid width
+	float fgh = height - in.top - in.bottom; // Full grid height
 
-	float tw = (cw - hs * (gw - 1)) / gw;
-	float th = (ch - vs * (gh - 1)) / gh;
+	float tw = (fgw - hs * (gw - 1)) / gw;
+	float th = (fgh - vs * (gh - 1)) / gh;
 
-	for(int i = 0; i < size; i++){
-		auto comp = children[i];
+	int i = 0; // Grid position.
+	int ci;    // Component index.
+	for(ci = 0; ci < size; ci++){
+		Component& comp = *children[ci];
+		vec2i size{1, 1};
+		if(ci < sizes.size()){
+			size = sizes[ci];
+		}
 
 		float tx, ty;
 		int txi, tyi;
-		switch(orientation){
+		switch(direction){
 		    default:
-			case Orientation::LR_TB:
+			case LR_TB:
 				txi = (i % gw);
 				tyi = (i / gw);
 				tx = in.left + txi * (tw + hs);
 				ty = in.top  + tyi * (th + vs);
 				break;
-			case Orientation::LR_BT:
+			case LR_BT:
 				txi = (i % gw);
 				tyi = ((gh - i - 1) / gw);
 				tx = in.left + txi * (tw + hs);
@@ -58,7 +64,16 @@ void GridPane::relayout(){
 				break;
 		}
 
-		comp->setBounds(tx, ty, tw, th);
+		i += size.h;
+
+		float cx = tx;
+		float cy = ty;
+		float cw = tw * size.w;
+		float ch = th * size.h + vs * (size.h - 1);
+		comp.setBounds(cx, cy, cw, ch);
 	}
 }
 
+void GridPane::setComponentSize(int i, int w, int h){
+	sizes.insert(sizes.begin() + i, {w, h});
+}

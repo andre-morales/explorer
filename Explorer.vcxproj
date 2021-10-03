@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="DRelease|x64">
+      <Configuration>DRelease</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Fast|x64">
+      <Configuration>Fast</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\GUI\Layouts\Layout.cpp" />
+    <ClCompile Include="src\GUI\Components\ScrollBar.cpp" />
+    <ClCompile Include="src\Game\ChunkImpl.cpp" />
+    <ClCompile Include="src\Explorer\ExplorerImpl.cpp" />
+    <ClCompile Include="ext\ilib\IO\Stream.cpp" />
+    <ClCompile Include="ext\ilib\logging.cpp" />
+    <ClCompile Include="ext\ilib\Math\noise.cpp" />
+    <ClCompile Include="ext\ilib\Math\prng.cpp" />
+    <ClCompile Include="ext\ilib\Net\BufferedSocket.cpp" />
+    <ClCompile Include="ext\ilib\Net\Networking.cpp" />
+    <ClCompile Include="ext\ilib\Net\Socket.cpp" />
+    <ClCompile Include="ext\ilib\thread.cpp" />
+    <ClCompile Include="ext\lodepng.cpp" />
+    <ClCompile Include="src\Explorer\Camera.cpp" />
+    <ClCompile Include="src\Explorer\ChunkBatcher.cpp" />
+    <ClCompile Include="src\Explorer\ConsoleUI.cpp" />
+    <ClCompile Include="src\Explorer\Explorer.cpp" />
+    <ClCompile Include="src\Explorer\ExplorerGUI.cpp" />
+    <ClCompile Include="src\Explorer\Game.cpp" />
+    <ClCompile Include="src\Explorer\GameImpl.cpp" />
+    <ClCompile Include="src\Explorer\MainMenuUI.cpp" />
+    <ClCompile Include="src\Explorer\StartUI.cpp" />
+    <ClCompile Include="src\Explorer\Window.cpp" />
+    <ClCompile Include="src\Game\Block.cpp" />
+    <ClCompile Include="src\Game\BlockInfo.cpp" />
+    <ClCompile Include="src\Game\Chunk.cpp" />
+    <ClCompile Include="src\Game\Instance.cpp" />
+    <ClCompile Include="src\Game\Planet.cpp" />
+    <ClCompile Include="src\Game\TextLog.cpp" />
+    <ClCompile Include="src\Game\Universe.cpp" />
+    <ClCompile Include="src\GUI\Components\Component.cpp" />
+    <ClCompile Include="src\GUI\Components\BorderPane.cpp" />
+    <ClCompile Include="src\GUI\Components\Button.cpp" />
+    <ClCompile Include="src\GUI\Components\GridPane.cpp" />
+    <ClCompile Include="src\GUI\Components\Label.cpp" />
+    <ClCompile Include="src\GUI\Components\ScrollView.cpp" />
+    <ClCompile Include="src\GUI\Components\SplitPane.cpp" />
+    <ClCompile Include="src\GUI\Components\TextField.cpp" />
+    <ClCompile Include="src\GUI\Event\CharEvent.cpp" />
+    <ClCompile Include="src\GUI\Event\KeyEvent.cpp" />
+    <ClCompile Include="src\GUI\GUI.cpp" />
+    <ClCompile Include="src\GUI\Sprite.cpp" />
+    <ClCompile Include="src\GUI\Text.cpp" />
+    <ClCompile Include="src\Net\Packet.cpp" />
+    <ClCompile Include="src\Render\Color.cpp" />
+    <ClCompile Include="src\Render\Font.cpp" />
+    <ClCompile Include="src\Render\Geometry.cpp" />
+    <ClCompile Include="src\Render\GL.cpp" />
+    <ClCompile Include="src\Render\GLContext.cpp" />
+    <ClCompile Include="src\Render\Image.cpp" />
+    <ClCompile Include="src\Render\Renderer.cpp" />
+    <ClCompile Include="src\Render\Texture.cpp" />
+    <ClCompile Include="src\Render\TextureAtlas.cpp" />
+    <ClCompile Include="src\GUI\Layouts\StackLayout.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\GUI\Layouts\Layout.h" />
+    <ClInclude Include="src\GUI\Components\ScrollBar.h" />
+    <ClInclude Include="src\Game\ChunkImpl.h" />
+    <ClInclude Include="src\Explorer\ExplorerImpl.h" />
+    <ClInclude Include="src\Explorer\GameImpl.h" />
+    <ClInclude Include="src\GUI\Layouts\StackLayout.h" />
+  </ItemGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Fast|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>src;ext;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>EXPLORER_CLIENT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <Optimization>Custom</Optimization>
+      <SmallerTypeCheck>
+      </SmallerTypeCheck>
+      <BasicRuntimeChecks>
+      </BasicRuntimeChecks>
+      <BufferSecurityCheck>
+      </BufferSecurityCheck>
+      <ControlFlowGuard>
+      </ControlFlowGuard>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard_C>stdc11</LanguageStandard_C>
+      <OmitFramePointers>true</OmitFramePointers>
+      <RemoveUnreferencedCodeData>
+      </RemoveUnreferencedCodeData>
+      <RuntimeTypeInfo>
+      </RuntimeTypeInfo>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <IntrinsicFunctions>false</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
+      <EnableFiberSafeOptimizations>false</EnableFiberSafeOptimizations>
+      <OmitDefaultLibName>
+      </OmitDefaultLibName>
+      <ConformanceMode>
+      </ConformanceMode>
+      <ForceConformanceInForLoopScope>
+      </ForceConformanceInForLoopScope>
+      <EnforceTypeConversionRules>
+      </EnforceTypeConversionRules>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <DisableSpecificWarnings>26812;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>msvc\lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;glew32.lib;ws2_32.lib;opengl32.lib;ucrt.lib;vcruntime.lib;msvcrt.lib;msvcprt.lib</AdditionalDependencies>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>src;ext;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>EXPLORER_CLIENT;RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <Optimization>MaxSpeed</Optimization>
+      <SmallerTypeCheck>
+      </SmallerTypeCheck>
+      <BasicRuntimeChecks>
+      </BasicRuntimeChecks>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <ControlFlowGuard>false</ControlFlowGuard>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard_C>stdc11</LanguageStandard_C>
+      <OmitFramePointers>true</OmitFramePointers>
+      <RemoveUnreferencedCodeData>true</RemoveUnreferencedCodeData>
+      <RuntimeTypeInfo>
+      </RuntimeTypeInfo>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <EnableFiberSafeOptimizations>
+      </EnableFiberSafeOptimizations>
+      <OmitDefaultLibName>
+      </OmitDefaultLibName>
+      <ConformanceMode>
+      </ConformanceMode>
+      <ForceConformanceInForLoopScope>
+      </ForceConformanceInForLoopScope>
+      <EnforceTypeConversionRules>
+      </EnforceTypeConversionRules>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
+      <DisableSpecificWarnings>26812;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
+      <OpenMPSupport>false</OpenMPSupport>
+      <SupportJustMyCode>false</SupportJustMyCode>
+      <EnableEnhancedInstructionSet>NoExtensions</EnableEnhancedInstructionSet>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>msvc\lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;glew32.lib;ws2_32.lib;opengl32.lib;vcruntime.lib;msvcrt.lib;msvcprt.lib;ucrt.lib</AdditionalDependencies>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <OptimizeReferences>true</OptimizeReferences>
+      <LinkStatus>false</LinkStatus>
+      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DRelease|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>src;ext;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>EXPLORER_CLIENT;RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <Optimization>MaxSpeed</Optimization>
+      <SmallerTypeCheck>
+      </SmallerTypeCheck>
+      <BasicRuntimeChecks>
+      </BasicRuntimeChecks>
+      <BufferSecurityCheck>
+      </BufferSecurityCheck>
+      <ControlFlowGuard>
+      </ControlFlowGuard>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard_C>stdc11</LanguageStandard_C>
+      <OmitFramePointers>true</OmitFramePointers>
+      <RemoveUnreferencedCodeData>true</RemoveUnreferencedCodeData>
+      <RuntimeTypeInfo>
+      </RuntimeTypeInfo>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <EnableFiberSafeOptimizations>
+      </EnableFiberSafeOptimizations>
+      <OmitDefaultLibName>
+      </OmitDefaultLibName>
+      <ConformanceMode>
+      </ConformanceMode>
+      <ForceConformanceInForLoopScope>
+      </ForceConformanceInForLoopScope>
+      <EnforceTypeConversionRules>
+      </EnforceTypeConversionRules>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
+      <DisableSpecificWarnings>26812;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
+      <OpenMPSupport>false</OpenMPSupport>
+      <SupportJustMyCode>false</SupportJustMyCode>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>msvc\lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;glew32.lib;ws2_32.lib;opengl32.lib;vcruntime.lib;msvcrt.lib;msvcprt.lib;ucrt.lib</AdditionalDependencies>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <OptimizeReferences>true</OptimizeReferences>
+      <LinkStatus>false</LinkStatus>
+      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>src;ext;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>EXPLORER_CLIENT;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard_C>stdc11</LanguageStandard_C>
+      <SmallerTypeCheck>
+      </SmallerTypeCheck>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <StructMemberAlignment>
+      </StructMemberAlignment>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <ControlFlowGuard>false</ControlFlowGuard>
+      <Optimization>Disabled</Optimization>
+      <RemoveUnreferencedCodeData>
+      </RemoveUnreferencedCodeData>
+      <EnforceTypeConversionRules>
+      </EnforceTypeConversionRules>
+      <RuntimeTypeInfo>
+      </RuntimeTypeInfo>
+      <OmitDefaultLibName>false</OmitDefaultLibName>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <IntrinsicFunctions>false</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
+      <OmitFramePointers>false</OmitFramePointers>
+      <EnableFiberSafeOptimizations>false</EnableFiberSafeOptimizations>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <DisableSpecificWarnings>26812;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <SupportJustMyCode>false</SupportJustMyCode>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>msvc\lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;glew32.lib;ws2_32.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>
+      </GenerateDebugInformation>
+      <AssemblyDebug>
+      </AssemblyDebug>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+    </Link>
+  </ItemDefinitionGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{0d229f18-4f21-42a8-84df-2748b99e4ab0}</ProjectGuid>
+    <RootNamespace>Explorer</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+    <ProjectName>ExplorerClient</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Fast|x64'">
+    <PlatformToolset>v142</PlatformToolset>
+    <EnableASAN />
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <PlatformToolset>v142</PlatformToolset>
+    <EnableASAN />
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DRelease|x64'" Label="Configuration">
+    <PlatformToolset>v142</PlatformToolset>
+    <EnableASAN />
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <PlatformToolset>v142</PlatformToolset>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <EnableASAN>false</EnableASAN>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Fast|x64'">
+    <OutDir>$(SolutionDir)msvc\build_cache\out\$(Configuration)_$(Platform)\</OutDir>
+    <IntDir>$(SolutionDir)msvc\build_cache\obj\$(Configuration)_$(Platform)\</IntDir>
+    <GenerateManifest>false</GenerateManifest>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(SolutionDir)msvc\dist64\</OutDir>
+    <IntDir>$(SolutionDir)msvc\build_cache\obj\$(Configuration)_$(Platform)\</IntDir>
+    <GenerateManifest>false</GenerateManifest>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DRelease|x64'">
+    <OutDir>$(SolutionDir)msvc\dist64\</OutDir>
+    <IntDir>$(SolutionDir)msvc\build_cache\obj\$(Configuration)_$(Platform)\</IntDir>
+    <GenerateManifest>false</GenerateManifest>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(SolutionDir)msvc\build_cache\out\$(Configuration)_$(Platform)\</OutDir>
+    <IntDir>$(SolutionDir)msvc\build_cache\obj\$(Configuration)_$(Platform)\</IntDir>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

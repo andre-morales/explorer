@@ -15,7 +15,7 @@ void Image::loadFile(const char* file){
 	if(lodepng::decode(_data, width, height, file) != 0){
 		char msg[64]; msg[63] = 0;
 		snprintf(msg, 63, "Tried to load image '%s' but couldn't find the file!", file);
-		throw Exception(msg);
+		//throw Exception(msg);
 	}
 	data.reset(new unsigned char[_data.size()]);
 	memcpy(data.get(), &_data[0], _data.size());

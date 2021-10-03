@@ -1,7 +1,8 @@
 #pragma once
-#include "ilib/Math/prng.h"
+class PRNG;
 
-struct Color {
+class Color {
+public:
 	float r, g, b, a;
 
 	Color();
@@ -10,5 +11,5 @@ struct Color {
 
 	static Color random();
 private:
-	static PRNG randomColorGen;
+	static PRNG* randomColorGen;
 };

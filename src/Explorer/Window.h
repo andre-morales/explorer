@@ -20,8 +20,6 @@ public:
 	std::vector<KeyListener*> keyListeners;
 	std::vector<CharListener*> charListeners;
 
-	GLFWwindow* handle;
-
 	Window();
 	Window(int, int, const char*);
 	~Window();
@@ -42,37 +40,46 @@ public:
 	// Window Functions
 	void holdCursor();
 	void freeCursor();
-	void getMousePosition(double*, double*);
+	void getMousePosition(double*, double*) const;
 	bool getKey(int);
 	
 	void setVisible(bool);
 	void setCloseFlag(bool);
 	bool getCloseFlag();
 
+	void makeFullscreen();
+	void makeWindowed();
+
 	// Event Handling
 	FrameSizeListener* addFrameSizeListener(FrameSizeListener);
-	void removeFrameSizeListener(FrameSizeListener*);
+	void removeFrameSizeListener(void*&);
 
 	MouseButtonListener* addMouseButtonListener(MouseButtonListener);
-	void removeMouseButtonListener(MouseButtonListener*);
+	void removeMouseButtonListener(void*&);
 
 	MouseMotionListener* addMouseMotionListener(MouseMotionListener);
-	void removeMouseMotionListener(MouseMotionListener*);
+	void removeMouseMotionListener(void*&);
 
 	KeyListener* addKeyListener(KeyListener);
-	void removeKeyListener(KeyListener*);
+	void removeKeyListener(void*&);
 
 	CharListener* addCharListener(CharListener);
-	void removeCharListener(CharListener*);
+	void removeCharListener(void*&);
 
 	static void fireEvents();
 	static Window* getWindow(GLFWwindow*);
 
 private:
+	GLFWwindow* handle = 0;
 	GL glSetting;
 
+	bool fullscreen = false;
+	int posX, posY;
 	int width, height;
+	int windowedWidth = 0, windowedHeight = 0;
+	int frameWidth = 0, frameHeight = 0;
 	float aspect;
-	int frameWidth, frameHeight;
 	std::string title;
+
+	void setupGLHints();
 };

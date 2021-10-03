@@ -8,18 +8,14 @@ void Packet::op(PacketCode pc){
 	this->opcode = (unsigned short)pc;
 }
 
-void Packet::send(Socket* s){
+void Packet::send(Socket* s) const {
     send((Stream*)s);
 }
-void Packet::send(Stream* s){
+void Packet::send(Stream* s) const {
 	s->write((byte*)&opcode, 2);
 	s->write((byte*)&length, 4);
 	s->write(data, length);
 }
-
-void Packet::get(Stream* s){
-	s->read((byte*)&opcode, 2);
-	s->read((byte*)&length, 4);
-	data = new byte[length];
-	s->read((byte*)data, length);
+std::string Packet::asString() const {
+	return std::string((char*)data, length);
 }

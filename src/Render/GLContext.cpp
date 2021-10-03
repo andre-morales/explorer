@@ -125,6 +125,10 @@ void GLContext::disableNormalsArray(){
 	if(normalsArray){ normalsArray = false; glDisableClientState(GL_NORMAL_ARRAY); }
 }
 
+void GLContext::setColorsArray(bool colorsArray){
+	if(colorsArray) enableColorsArray();
+	else disableColorsArray();
+}
 void GLContext::enableColorsArray(){
 	if(!colorsArray){ colorsArray = true; glEnableClientState(GL_COLOR_ARRAY); }
 }
