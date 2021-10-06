@@ -83,5 +83,6 @@ private:
 
 	void net_requestChunk(uint64);
 	void net_sendChatMessage();
+	void net_disconnect();
 	void log(const string&, const string&);
 };

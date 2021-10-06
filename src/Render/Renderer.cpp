@@ -14,11 +14,11 @@
 #include "Render/Image.h"
 #include "Render/Font.h"
 #include "Render/Color.h"
+#include "Render/Geometry.h"
 #include "Exception.h"
 #include "GL/glew.h"
 #include <string>
 #include <iostream>
-#include <sstream>
 
 Renderer::Renderer(Explorer& exp) : explorer(exp){
 	log("Render", "Building...");
@@ -51,13 +51,10 @@ void Renderer::loadResources(){
 	loadTexture("gui_button", true, true);
 	loadTexture("gui_panel", true, true);
 	loadTexture("gui_panel2", true, true);
+	loadTexture("sun", true, true);
+	loadTexture("moon", true, true);
     loadTexture("skybox");
     font = mkShared<Font>(getAtlas("fonts"));
-}
-
-void Renderer::begin(){
-	glClearColor(0.2, 0.4, 1.0, 1.0);
-	glAlphaFunc(GL_GREATER, 0.5);
 }
 
 void Renderer::shutdown(){
@@ -68,68 +65,91 @@ void Renderer::shutdown(){
 	log("Render", "Shut down!");
 }
 
+
+void Renderer::begin(){
+	GLContext& gi = *context;
+	glClearColor(0.2, 0.4, 1.0, 1.0);
+	glAlphaFunc(GL_GREATER, 0.5);
+	gi.enableColorMaterial();
+
+	// Sets up ambient light
+	const float ambientLight[] = {0.6f, 0.6f, 0.6f, 1.0f};
+	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambientLight);
+
+	// Sun
+	glEnable(GL_LIGHT0);
+	const float sunDiffuseColor[] = {0.4 * 1.0, 0.4 * 0.9, 0.4 * 0.8, 1.0f};
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, sunDiffuseColor);
+	
+	// Sun
+	glEnable(GL_LIGHT1);
+	const float moonDiffuseColor[] = {0.0, 0.1, 0.5, 1.0f};
+	glLightfv(GL_LIGHT1, GL_DIFFUSE, moonDiffuseColor);
+}
+
 void Renderer::render(){
 	GLContext& gi = *context;
 
 	glViewport(0, 0, window->getWidth(), window->getHeight());
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glColor3f(1, 1, 1);
 
 	if(explorer.gameInstance){
-        drawGame11();
+        drawGame11(gi);
 	}
 
+    renderUI(gi);
+
+    int err = glGetError();
+	if(err != 0) std::cerr << "GL Error: " << err << "\n";
+}
+
+void Renderer::renderUI(GLContext& gi){
 	gi.disableFaceCulling();
 	gi.disableBlending();
 	gi.disableDepthTesting();
 	gi.enableAlphaTesting();
 
 	glMatrixMode(GL_PROJECTION);
-	float wh = window->getHeight();
-	float hw = window->getWidth() / 2.0f;
-	float hh = window->getHeight() / 2.0f;
-	glLoadMatrixf(mat4<float>::ortho(-hw, hw, hh, -hh, -1, 1));
+	float hw = gi.getWidth() / 2.0f;
+	float hh = gi.getHeight() / 2.0f;
+	glLoadMatrixf(mat4f::ortho(-hw, hw, hh, -hh, -1, 1));
 	glTranslatef(-hw, -hh, 0);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-    explorer.ui->render();
-
-    int err = glGetError();
-	if(err != 0) std::cerr << "GL Error: " << err << "\n";
+	explorer.ui->render();
 }
 
-void Renderer::drawGame11(){
-	glColor3f(1, 1, 1);
-
+void Renderer::drawGame11(GLContext& gi){
 	Explorer& ex = explorer;
-	GLContext& gi = *context;
     Game& gin = *ex.gameInstance;
-    Camera& cam = *gin.camera;
-	//Player& mp = *gin.player;
-
-	cam.aspect = window->getWidth() / (float)window->getHeight();
-	cam.makeView();
-	cam.makeTransform();
-
-	glMatrixMode(GL_PROJECTION);
-	glLoadMatrixd(cam.makeProjection());
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	glRotatef(cam.rot.x, 1, 0, 0);
-	glRotatef(cam.rot.y, 0, 1, 0);
 
 	if(!gin.universe) return;
 	Universe& uni = *gin.universe;
 	if(uni.planets.size() == 0) return;
 	Planet& pl = *(uni.planets[0]);
 
+	// Setup projection
+	Camera& cam = *gin.camera;
+	cam.aspect = window->getAspectRatio();
+
+	glMatrixMode(GL_PROJECTION);
+	glLoadMatrixd(cam.makeProjection());
+
+	// Setup just camera roation
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	glRotatef(cam.rot.x, 1, 0, 0);
+	glRotatef(cam.rot.y, 0, 1, 0);
+
 	// Skybox
 	gi.enableTexture2d();
 	gi.enableVertsArray();
 	gi.enableUVsArray();
 	gi.disableDepthTesting();
+	gi.disableFaceCulling();
 
     bindTexture("skybox");
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
@@ -138,14 +158,53 @@ void Renderer::drawGame11(){
     glTexCoordPointer(2, GL_FLOAT, 0, skybox_uvs);
     glDrawArrays(GL_QUADS, 0, 24);
 
-    gi.enableTexture2d();
+	// Sun
+	gi.enableBlending();
+	bindTexture("sun");
+	glPushMatrix();
+	glRotatef(-pl.sunXRotation, 0, 1, 0);
+	glRotatef(pl.dayTime * 360 - 90, 1, 0, 0);
+	glScalef(0.42, 0.42, 1);
+	glTranslatef(0, 0, -1);
+	glVertexPointer(3, GL_FLOAT, 0, Quad::verts3_tris);
+	glTexCoordPointer(2, GL_FLOAT, 0, Quad::uvs);
+	glDrawArrays(GL_QUADS, 0, 4);
+	glPopMatrix();
+
+	// Moon
+	bindTexture("moon");
+	glRotatef(-pl.sunXRotation, 0, 1, 0);
+	glRotatef(pl.dayTime * 360 + 90, 1, 0, 0);
+	glScalef(0.42, 0.42, 1);
+	glTranslatef(0, 0, -1);
+	glVertexPointer(3, GL_FLOAT, 0, Quad::verts3_tris);
+	glTexCoordPointer(2, GL_FLOAT, 0, Quad::uvs);
+	glDrawArrays(GL_QUADS, 0, 4);
+
+	// Render chunks
+	glLoadMatrixd(cam.makeView());
+	float sunAngle = pl.dayTime * 360;
+
+	const float sunpos[] = {sindf(sunAngle) * sindf(pl.sunXRotation), sindf(sunAngle - 90), sindf(sunAngle) * cosdf(pl.sunXRotation), 0};
+	glLightfv(GL_LIGHT0, GL_POSITION, sunpos);
+
+	const float moonpos[] = {sindf(sunAngle + 180) * sindf(pl.sunXRotation), sindf(sunAngle + 90), sindf(sunAngle  + 180) * cosdf(pl.sunXRotation), 0};
+	glLightfv(GL_LIGHT1, GL_POSITION, moonpos);
+
+	gi.enableVertsArray();
+	gi.enableUVsArray();
 	gi.enableFaceCulling();
 	gi.enableDepthTesting();
     gi.disableAlphaTesting();
-	gi.setColorsArray(chunkColors);
-	bindTexture("blocks_atlas");
+	gi.disableBlending();
 
-	// Render Slices
+	gi.setColorsArray(chunkColors);
+	gi.enableLighting();
+	gi.enableNormalsArray();
+	
+	bindTexture("blocks_atlas");
+	
+	
 	for(Chunk* chunk_ : pl.chunkSet){
 		Chunk& chunk = *chunk_;
 
@@ -155,12 +214,65 @@ void Renderer::drawGame11(){
 			glVertexPointer(3, GL_FLOAT, 0, chunk.batchedVerts);
 			glTexCoordPointer(2, GL_FLOAT, 0, chunk.batchedUVs);
 
-			//glNormalPointer(GL_BYTE, 0, chunk.batchedNormals);
-			if(chunkColors)glColorPointer(3, GL_UNSIGNED_BYTE, 0, chunk.batchedColors);
+			glNormalPointer(GL_FLOAT, 0, chunk.batchedNormals);
+			if(chunkColors) glColorPointer(3, GL_UNSIGNED_BYTE, 0, chunk.batchedColors);
 			glDrawArrays(GL_QUADS, 0, chunk.batchedVertsLen);
+		} else if(chunk.batchedCenter){
+			gi.disableTexture2d();
+			double _x = chunk.cx * 24, _y = chunk.cy * 24, _z = chunk.cz * 24;
+			glLoadMatrixd(mat4d::translation(_x, _y, _z) * cam.view);
+			glVertexPointer(3, GL_FLOAT, 0, chunk.batchedVerts);
+			//glTexCoordPointer(2, GL_FLOAT, 0, chunk.batchedUVs);
+
+			glNormalPointer(GL_FLOAT, 0, chunk.batchedNormals);
+			glColorPointer(3, GL_UNSIGNED_BYTE, 0, chunk.batchedColors);
+			glDrawArrays(GL_QUADS, 0, chunk.batchedVertsLen);
+			gi.enableTexture2d();
+		} else if(chunk.blocks){
+			glColor3f(0.8, 0.1, 1.0);
+			gi.disableTexture2d();
+			gi.disableLighting();
+			double _x = chunk.cx * 24, _y = chunk.cy * 24, _z = chunk.cz * 24;
+			glLoadMatrixd(mat4d::translation(_x, _y, _z) * cam.view);
+			glBegin(GL_QUADS);
+			glVertex3f(0, 0, 0);
+			glVertex3f(0, 0, 24);
+			glVertex3f(24, 0, 24);
+			glVertex3f(24, 0, 0);
+			glEnd();
+			gi.enableTexture2d();
+			gi.enableLighting();
+		} else if(chunk.state == Chunk::State::REQUESTED){
+			glColor3f(0.1, 0.1, 1.0);
+			gi.disableTexture2d();
+			gi.disableLighting();
+			double _x = chunk.cx * 24, _y = chunk.cy * 24, _z = chunk.cz * 24;
+			glLoadMatrixd(mat4d::translation(_x, _y, _z) * cam.view);
+			glBegin(GL_QUADS);
+			glVertex3f(0, 0, 0);
+			glVertex3f(0, 0, 24);
+			glVertex3f(24, 0, 24);
+			glVertex3f(24, 0, 0);
+			glEnd();
+			gi.enableTexture2d();
+			gi.enableLighting();
+		} else {
+			glColor3f(0.5, 0.5, 0.5);
+			gi.disableTexture2d();
+			gi.disableLighting();
+			double _x = chunk.cx * 24, _y = chunk.cy * 24, _z = chunk.cz * 24;
+			glLoadMatrixd(mat4d::translation(_x, _y, _z) * cam.view);
+			glBegin(GL_QUADS);
+			glVertex3f(0, 0, 0);
+			glVertex3f(0, 0, 24);
+			glVertex3f(24, 0, 24);
+			glVertex3f(24, 0, 0);
+			glEnd();
+			gi.enableTexture2d();
+			gi.enableLighting();
 		}
 	}
-
+	gi.disableLighting();
 	gi.disableColorsArray();
 }
 

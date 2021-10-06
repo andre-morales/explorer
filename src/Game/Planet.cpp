@@ -4,7 +4,7 @@
 #ifdef EXPLORER_CLIENT
 #include "Explorer/ChunkBatcher.h"
 #endif
-Planet::Planet(Universe* uni) : universe(uni), terrainGen(1){
+Planet::Planet(Universe* uni) : universe(uni), terrainGen(1), dayTime(0.45){
 	#ifdef EXPLORER_CLIENT
 	chunkBatcher.reset(new ChunkBatcher(*this));
 	#endif

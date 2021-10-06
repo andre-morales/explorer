@@ -1,19 +1,21 @@
-res/shaders
+res/shaders/
 docs/
 
-msvc/build_cache
-msvc/server_build_cache
-msvc/dist64/res
+msvc/build_cache/
+msvc/server_build_cache/
+msvc/dist64/*.dll
+msvc/dist64/res/
+msvc/dist32/
 .vs/
 *vcxproj.filters
 *vcxproj.user
 *.pdb
 
-mingw/build_cache
-mingw/dist64
-mingw/lib64
-mingw/server64
-mingw/res
+mingw/build_cache/
+mingw/dist64/
+mingw/lib64/
+mingw/server64/
+mingw/res/
 mingw/*.depend
 mingw/*.layout
 Explorer.log

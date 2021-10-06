@@ -11,7 +11,8 @@
 #include "Exception.h"
 ChunkBatcher::ChunkBatcher(Planet& p)
 : planet(p), dataInstance(*p.universe->instance), blockDB(dataInstance.registeredBlocks){
-	auto& atl = *(TextureAtlas*)dataInstance.explorer->renderer->getTexture("blocks_atlas").get();
+	auto atl_ = dataInstance.explorer->renderer->getTexture("blocks_atlas");
+	auto& atl = *(TextureAtlas*)atl_.get();
 	atlas.width = atl.width;
 	atlas.height = atl.height;
 	atlas.tileWidth = atl.tileWidth;
@@ -57,8 +58,8 @@ void ChunkBatcher::batchCenter(Chunk& chunk){
 					if(y < 23) topBlock = data[x][y + 1][z].id;
 					leftBlock = data[x-1][y][z].id;
 					rightBlock = data[x+1][y][z].id;
-					frontBlock = data[x][y][z + 1].id;
-					backBlock = data[x][y][z - 1].id;
+					frontBlock = data[x][y][z+1].id;
+					backBlock = data[x][y][z-1].id;
 
 					bool top = !infos[topBlock].opaque;
 					bool bottom = !infos[bottomBlock].opaque;
@@ -312,7 +313,10 @@ void ChunkBatcher::addFace(const BatchContext& bc, byte id, byte face, int8 x, i
 	const uint16 verts = face*4;
 	addVertexAlloc(ch, 4);
 	for(uint16 i = 0; i < 4; i++){
-		uint16 vt = verts + i;
+		
+		uint16 vt = verts + i; // Vertex index
+
+		// Vertex position
 		float vx = Cube::verts_tris[vt*3+0] + x;
 		float vy = Cube::verts_tris[vt*3+1] + y;
 		float vz = Cube::verts_tris[vt*3+2] + z;
@@ -321,6 +325,7 @@ void ChunkBatcher::addFace(const BatchContext& bc, byte id, byte face, int8 x, i
 		*ch.genVertsP++ = vy;
 		*ch.genVertsP++ = vz;
 
+		// UVs
 		float _tu = Cube::uvs_tris[vt*2+0];
 		float _tv = Cube::uvs_tris[vt*2+1];
 		float ux = (_tu + u) * tw;
@@ -329,19 +334,20 @@ void ChunkBatcher::addFace(const BatchContext& bc, byte id, byte face, int8 x, i
 		*ch.genUVsP++ = ux;
 		*ch.genUVsP++ = uy;
 
+		// Colors
 		byte cf_ = 255 - of[i];
 		*ch.genColorsP++ = cf_;
 		*ch.genColorsP++ = cf_;
 		*ch.genColorsP++ = cf_;
 
+		// Normals
+		float nx = (Cube::normals_tris[vt*3+0]);
+		float ny = (Cube::normals_tris[vt*3+1]);
+		float nz = (Cube::normals_tris[vt*3+2]);
 
-		/*const float nx = (Cube::normals_tris[vt*3+0]);
-		const float ny = (Cube::normals_tris[vt*3+1] + npadY);
-		const float nz = (Cube::normals_tris[vt*3+2]);*/
-
-		/*normalsP++ = nx*127;
-		*normalsP++ = ny*127;
-		*normalsP++ = nz*127;*/
+		*ch.genNormalsP++ = nx;
+		*ch.genNormalsP++ = ny;
+		*ch.genNormalsP++ = nz;
 	}
 }
 
@@ -353,18 +359,22 @@ void ChunkBatcher::addVertexAlloc(Chunk& ch, int n){
 		float* overts = ch.batchedVerts;
 		float* ouvs = ch.batchedUVs;
 		byte* ocolors = ch.batchedColors;
+		float* onormals = ch.batchedNormals;
 
-		ch.batchedVerts = (float*)realloc(overts, ch.allocatedVerts * 4 * 3);
-		ch.batchedUVs = (float*)realloc(ouvs, ch.allocatedVerts * 4 * 2);
-		ch.batchedColors = (byte*)realloc(ocolors,  ch.allocatedVerts * 3);
+		ch.batchedVerts =   (float*)realloc(overts,   (uintptr)ch.allocatedVerts * 4 * 3);
+		ch.batchedUVs =     (float*)realloc(ouvs,     (uintptr)ch.allocatedVerts * 4 * 2);
+		ch.batchedColors =   (byte*)realloc(ocolors,  (uintptr)ch.allocatedVerts * 3);
+		ch.batchedNormals = (float*)realloc(onormals, (uintptr)ch.allocatedVerts * 4 * 3);
 
-		ch.genVertsP = ch.batchedVerts + (ch.genVertsP - overts);
-		ch.genUVsP = ch.batchedUVs + (ch.genUVsP - ouvs);
-		ch.genColorsP = ch.batchedColors + (ch.genColorsP - ocolors);
+		ch.genVertsP =   ch.batchedVerts +   (ch.genVertsP -   overts);
+		ch.genUVsP =     ch.batchedUVs +     (ch.genUVsP -     ouvs);
+		ch.genColorsP =  ch.batchedColors +  (ch.genColorsP -  ocolors);
+		ch.genNormalsP = ch.batchedNormals + (ch.genNormalsP - onormals);
 
-		ch.cornerVertsP = ch.batchedVerts + (ch.cornerVertsP - overts);
-		ch.cornerUVsP = ch.batchedUVs + (ch.cornerUVsP - ouvs);
-		ch.cornerColorsP = ch.batchedColors + (ch.cornerColorsP - ocolors);
+		ch.cornerVertsP =   ch.batchedVerts +   (ch.cornerVertsP -   overts);
+		ch.cornerUVsP =     ch.batchedUVs +     (ch.cornerUVsP -     ouvs);
+		ch.cornerColorsP =  ch.batchedColors +  (ch.cornerColorsP -  ocolors);
+		ch.cornerNormalsP = ch.batchedNormals + (ch.cornerNormalsP - onormals);
 	}
 }
 

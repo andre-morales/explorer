@@ -1,10 +1,9 @@
 #include "BufferedSocket.h"
 #include "Socket.h"
-#include <winsock2.h>
 #include <iostream>
 #include "SocketException.h"
 
-BufferedSocket::BufferedSocket(Socket* s) : sock(s){
+BufferedSocket::BufferedSocket(un<Socket>&& s) : sock(std::move(s)){
 	writePtr = 0;
 	readPtr = 0;
 }
@@ -19,7 +18,7 @@ void BufferedSocket::init(uint32 size){
     sock->setBlocking(false);
 }
 
-int BufferedSocket::write(const byte* data, uint32 len){
+uint32 BufferedSocket::write(const byte* data, uint32 len){
 	return sock->write(data, len);
 }
 
@@ -36,7 +35,7 @@ std::string tostr(byte* ptr, int len){
 	return a;
 }
 
-int BufferedSocket::read(byte* buff, uint32 len){
+uint32 BufferedSocket::read(byte* buff, uint32 len){
      //First read all that can be read to internal buffer.
     int br = sock->read(this->buffer + writePtr, bufferSize - writePtr);
     if(br > 0){

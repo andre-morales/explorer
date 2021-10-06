@@ -27,11 +27,15 @@ void TcpServer::start(){
 
 Socket* TcpServer::acceptConnection(){
 	sockaddr_in client;
+
 	int c = sizeof(sockaddr_in);
-	NetSocket sock = accept(serverSocket, (sockaddr*)(&client), &c);
+	UINT_PTR sock = accept(serverSocket, (sockaddr*)(&client), &c);
 	if (sock == INVALID_SOCKET){
 		printf("accept failed with error code : %d" , WSAGetLastError());
 	}
 	return new Socket(sock);
 }
 
+void TcpServer::close(){
+	shutdown(serverSocket, 1);
+}

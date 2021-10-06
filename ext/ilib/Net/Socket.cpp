@@ -1,56 +1,71 @@
 #include "Socket.h"
-#include <winsock2.h>
+#include <WS2tcpip.h>
 #include <iostream>
 #include "SocketException.h"
 
-Socket::Socket(NetSocket s) : nsocket(s){}
+std::string wsaErrorStr(int err){
+	switch(err){
+	default:
+		return std::to_string(err);
+	}
+}
+
+std::string getWSAErrorStr(){
+	return wsaErrorStr(WSAGetLastError());
+}
+
+Socket::Socket(uintptr socket) : handle(socket){}
 
 Socket::Socket(const char* ipaddress, int port){
 	sockaddr_in server;
-	server.sin_addr.s_addr = inet_addr(ipaddress);
+	inet_pton(AF_INET, ipaddress, &server.sin_addr.s_addr);
 	server.sin_family = AF_INET;
 	server.sin_port = htons(port);
 
-	nsocket = socket(AF_INET, SOCK_STREAM, 0);
-	if(nsocket == INVALID_SOCKET){
-		throw SocketException(std::string("Could not create socket. ") + std::to_string(WSAGetLastError()));
+	handle = socket(AF_INET, SOCK_STREAM, 0);
+	if(handle == INVALID_SOCKET){
+		throw SocketException("Could not create socket. " + getWSAErrorStr());
 	}
 
-	if (connect(nsocket, (sockaddr*)(&server), sizeof(server)) < 0){
-		int error = WSAGetLastError();
-		std::string errstr = std::to_string(error);
-		std::string fullerr = std::string("Socket connection failed. ") + errstr;
-		throw SocketException(fullerr);
+	if (connect(handle, (sockaddr*)(&server), sizeof(server)) < 0){
+		throw SocketException("Socket connection failed. " + getWSAErrorStr());
 	}
 }
-Socket::~Socket(){}
+Socket::~Socket(){
+	forceClose();
+}
 
-int Socket::write(const byte* data, uint32 len){
-	int res = send(nsocket, (const char*)data, len, 0);
+uint32 Socket::write(const byte* data, uint32 len){
+	int res = send(handle, (const char*)data, len, 0);
 	if(res < 0){
-		return -1;
+		throw SocketException("Socket writing error. " + getWSAErrorStr());
 	}
 	return res;
 }
 
-int Socket::read(byte* buff, uint32 len){
-	int br = recv(nsocket, (char*)buff, len, 0);
+uint32 Socket::read(byte* buff, uint32 len){
+	int br = recv(handle, (char*)buff, len, 0);
 	if(br < 0){
-		if(br == SOCKET_ERROR){
-			if(blocking){
-				auto err = WSAGetLastError();
-				throw SocketException(std::string("Socket error(" + std::to_string(err) + ")."));
-			}
-			return 0;
+		int err = WSAGetLastError();
+		if(blocking || err != WSAEWOULDBLOCK){
+			throw SocketException("Socket read error. " + wsaErrorStr(err));
 		}
-
-		throw SocketException("Unknown socket error.");
+		return 0;
 	}
 	return br;
+}
+
+uint32 Socket::available(){
+	u_long data;
+	ioctlsocket(handle, FIONREAD, &data);
+	return data;
 }
 
 void Socket::setBlocking(bool b){
 	blocking = b;
 	u_long mode = b?0:1;
-	ioctlsocket(nsocket, FIONBIO, &mode);
+	ioctlsocket(handle, FIONBIO, &mode);
+}
+void Socket::forceClose () {
+	closesocket(handle);
 }

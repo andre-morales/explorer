@@ -12,6 +12,8 @@ class Universe;
 class Planet {
 public:
 	Universe* universe;
+	float dayTime;
+	float sunXRotation = 30;
 	Noise terrainGen;
 	std::set<Chunk*> chunkSet;
 	obs_unordered_map<uint64, Chunk*> chunkMap;

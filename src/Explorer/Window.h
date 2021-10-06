@@ -35,6 +35,7 @@ public:
 	void setTitle(const std::string&);
 	int getWidth();
 	int getHeight();
+	float getAspectRatio();
 	void getFrameSize(int*, int*);
 
 	// Window Functions

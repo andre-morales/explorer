@@ -1,7 +1,4 @@
 #pragma once
-
-typedef unsigned long long int NetSocket;
-
 struct WSAData;
 
 namespace Net {

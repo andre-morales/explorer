@@ -142,15 +142,15 @@ void Window::setTitle(const std::string& title){
 }
 
 int Window::getWidth(){
-	int w;
-	glfwGetWindowSize(handle, &w, nullptr);
-	return w;
+	return width;
 }
 
 int Window::getHeight(){
-	int h;
-	glfwGetWindowSize(handle, nullptr, &h);
-	return h;
+	return height;
+}
+
+float Window::getAspectRatio(){
+	return width / (float)height;
 }
 
 void Window::holdCursor(){

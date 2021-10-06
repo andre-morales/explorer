@@ -49,15 +49,15 @@ void GUI::registerListeners(){
 }
 
 void GUI::unregisterListeners(){
-    auto win = context.lock()->window.lock();
-    if(frameSizeListener) win->removeFrameSizeListener(frameSizeListener);
-    if(mouseButtonListener) win->removeMouseButtonListener(mouseButtonListener);
-    if(mouseMotionListener) win->removeMouseMotionListener(mouseMotionListener);
-    if(keyListener) win->removeKeyListener(keyListener);
+	auto win = context.lock()->window.lock();
+	if(frameSizeListener) win->removeFrameSizeListener(frameSizeListener);
+	if(mouseButtonListener) win->removeMouseButtonListener(mouseButtonListener);
+	if(mouseMotionListener) win->removeMouseMotionListener(mouseMotionListener);
+	if(keyListener) win->removeKeyListener(keyListener);
 	if(charListener) win->removeCharListener(charListener);
 }
 
-void GUI::giveFocus(Shared<Component> fc){
+void GUI::giveFocus(sh<Component> fc){
 	auto ofc = focusedComponent.lock();
 	if(fc != ofc){
 		if(fc && fc->focusable){
@@ -77,7 +77,7 @@ void GUI::releaseFocus(Component* fc){
 }
 
 void GUI::onMouseButton(byte btn, byte act, byte mods, float mx, float my){
-    Component& r = *root;
+	Component& r = *root;
 
 	if(mx >= r.x && mx <= r.x + r.width && my >= r.y && my <= r.y + r.height){
 		propagateOnMouseButton(root, {r.x, r.y, r.width, r.height}, {btn, act, mods}, {mx, my});
@@ -121,7 +121,7 @@ void GUI::fireOnMouseButton(Shared<Component> fc, const vec3<byte>& ev, const ve
 }
 
 void GUI::onMouseMotion(float mx, float my){
-    Component& r = *root;
+	Component& r = *root;
 	if(mx >= r.x && mx <= r.x + r.width && my >= r.y && my <= r.y + r.height){
 		propagateOnMouseMotion(root, {r.x, r.y, r.width, r.height}, {mx, my});
 	}
@@ -160,19 +160,19 @@ void GUI::fireOnMouseMotion(Shared<Component> hc, const vec2f& sc, const vec2f& 
 	auto ohc = hoveredComponent.lock(); // Old focused component.
 	if(ohc){
 		if(ohc.get() != hc.get()){
-            // Tell old component that is not being hovered anymore.
+			// Tell old component that is not being hovered anymore.
 			ohc->fireMouseMotionListeners({ohc.get(), 2, sc, cc});
 
-            // Tell new component that it got focused.
+			// Tell new component that it got focused.
 			hc->fireMouseMotionListeners({hc.get(), 1, sc, cc});
-            hoveredComponent = hc;
+			hoveredComponent = hc;
 		} else {
 
-		    // Just hovering.
-		    hc->fireMouseMotionListeners({hc.get(), 0, sc, cc});
+			// Just hovering.
+			hc->fireMouseMotionListeners({hc.get(), 0, sc, cc});
 		}
 	} else {
-	    // Tell new component that it got focused.
+		// Tell new component that it got focused.
 		hoveredComponent = hc;
 		hc->fireMouseMotionListeners({hc.get(), 1, sc, cc});
 	}

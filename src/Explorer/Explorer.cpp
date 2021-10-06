@@ -30,15 +30,15 @@
 #include <assert.h>
 #include "cwarns.h"
 
-Explorer* explorer;
-
 int main(){
 	std::cout << "[-] Starting up...\n";
 	try{
-		explorer = new Explorer();
-		explorer->init();
-		explorer->run();
-		explorer->shutdown();
+		{
+			Explorer explorer{};
+			explorer.init();
+			explorer.run();
+			explorer.shutdown();
+		}
 		std::cout << "[-] Bye!\n";
 		return 0;
 	} catch(const Exception& ex){
@@ -262,7 +262,6 @@ void Explorer::shutdown(){
 		imp_quitGame();
 		gameInstance.reset();
 	}
-	delete explorer;
 }
 
 void Explorer::imp_localCommand(const std::string& str){
@@ -305,6 +304,14 @@ void Explorer::imp_localCommand(const std::string& str){
 		}
 	} else if("loadtex" == c){
 		renderer->loadTexture(args[1].c_str());
+	} else if("reloadtex" == c){
+		auto it = renderer->textures.find(args[1]);
+		if(it == renderer->textures.end()){
+			log("Console", "No such texture to unload!");
+		} else{
+			renderer->textures.erase(it);
+		}
+		renderer->loadTexture(args[1].c_str());
 	} else if("list" == c){
 		auto& type = args[1];
 		if("gui" == type){
@@ -323,6 +330,25 @@ void Explorer::imp_localCommand(const std::string& str){
 			for(auto it = renderer->textures.begin(); it != renderer->textures.end(); ++it){
 				log("+ " + it->first);
 			}
+		} else if("chunk" == type){
+			//auto& reqs = args[2];
+			//if(reqs == "-u"){
+				if(gameInstance){
+					for(const Chunk* ch : gameInstance->planet->chunkSet){
+						std::ostringstream oss;
+						oss << "[" << ch->cx << ", " << ch->cz << "] ";
+						switch(ch->state){
+						case Chunk::State::REQUESTED:
+							oss << "R";
+							break;
+						case Chunk::State::FINISHED:
+							oss << "F";
+							break;
+						}
+						log(oss.str());
+					}
+				}
+			//}
 		}
 	} else{
 		log("Console", "Unknown command '" + c + "'!");
@@ -347,9 +373,20 @@ void Explorer::updateDebugText(){
 	ss << "Explorer Alpha v" << E_VERSION_STR << " build " << E_BUILD_STR;
 	ss << "\n$rFPS: $a" << fps;
 	if(gameInstance){
+		constexpr auto ogn = [](float n){ // Output green number
+			std::ostringstream oss;
+			oss << "$a" << n << "$r";
+			return oss.str();
+		};
+
 		auto& gi = *gameInstance;
 		auto& pos = gi.camera->pos;
-		ss << "\n$rP: $a" << pos.x << "$r / $a" << pos.y << "$r / $a" << pos.z;
+		auto& rot = gi.camera->rot;
+		ss << "\n$rP: " << ogn(pos.x) << " / " << ogn(pos.y) << " / " << ogn(pos.z) << " [" << ogn(rot.x) << ", " << ogn(rot.y) << "]";
+		if(gi.planet) {
+			ss << "\n$rTime: " << gi.planet->dayTime;
+		}
+		
 	}
 	text = ss.str();
 }

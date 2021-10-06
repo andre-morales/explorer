@@ -3,8 +3,9 @@
 
 class Stream {
 public:
-    Stream();
-    virtual ~Stream();
-    virtual int write(const byte*, uint32);
-    virtual int read(byte*, uint32);
+    Stream(){}
+    virtual ~Stream(){}
+    virtual uint32 write(const byte*, uint32) = 0;
+    virtual uint32 read(byte*, uint32) = 0;
+    virtual uint32 available() = 0;
 };

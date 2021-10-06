@@ -36,6 +36,7 @@ public:
 	Shared<Texture> loadTexture(const char*, bool, bool);
 	Shared<TextureAtlas> loadAtlas(const char*, uint32, uint32);
 private:
-    void drawGame11();
+    void drawGame11(GLContext&);
+	void renderUI(GLContext&);
     void log(const std::string&, const std::string&);
 };

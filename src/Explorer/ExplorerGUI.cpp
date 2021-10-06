@@ -3,16 +3,15 @@
 #include "Explorer/Window.h"
 #include "Render/Renderer.h"
 #include "Render/Texture.h"
+#include "Render/GLContext.h"
 #include "GUI/GUI.h"
 #include "GUI/Sprite.h"
 #include "GUI/Components/Button.h"
 #include "GUI/Components/Label.h"
 #include "GUI/Components/TextField.h"
 #include "GUI/Event/MouseMotionEvent.h"
-#include <iostream>
-#include <algorithm>
-#include <utility>
 #include <string>
+#include "ilib/Math/mat4.h"
 #include "ilib/mem.h"
 ExplorerGUI::ExplorerGUI(Explorer& e) : explorer(e){}
 ExplorerGUI::~ExplorerGUI(){}
@@ -26,7 +25,7 @@ void ExplorerGUI::loadSprites(){
 }
 
 void ExplorerGUI::addGUI(Shared<GUI> gui){
-	addGUI(gui, std::to_string((uint64)gui.get()));
+	addGUI(gui, std::to_string((uintptr)gui.get()));
 }
 
 void ExplorerGUI::addGUI(Shared<GUI> gui, const std::string& name){
@@ -40,11 +39,8 @@ void ExplorerGUI::addGUI(Shared<GUI> gui, const std::string& name, uint8 p){
 }
 
 void ExplorerGUI::render() const {
-	for(uint32 i = 0; i < guiNames.size(); i++){
-		const std::string& guiName = guiNames[i];
-		const obs_unordered_map<std::string, Shared<GUI>>& guis_ = guis;
-		const Shared<GUI>& gui = guis_[guiName];
-		gui->render();
+	for(auto& name : guiNames){
+		guis[name]->render();
 	}
 }
 
@@ -70,7 +66,7 @@ Shared<GUI> ExplorerGUI::getGUI(const std::string& name){
 }
 
 void ExplorerGUI::addPanel(Shared<Component> comp, int p){
-    auto main = guis["main"];
+	auto main = guis["main"];
 	if(p < 0) {
 		return main->add(comp);
 	} else {
@@ -118,7 +114,7 @@ sh<Label> ExplorerGUI::clLabel(const char* text){
 }
 
 sh<TextField> ExplorerGUI::clTextField(const char* text){
-	auto field = mkShared<TextField>(text);
+	auto field = Sh<TextField>(text);
 	field->setBackground(explorer.ui->sprites["panel2"]);
 	field->setFont(explorer.renderer->font);
 	return field;

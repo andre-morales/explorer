@@ -4,7 +4,7 @@
 #include "GUI/Event/KeyEvent.h"
 
 TextField::TextField() : TextField(""){}
-TextField::TextField(const std::string& txt) : Component(){
+TextField::TextField(const std::string& txt){
 	focusable = true;
 	this->text = txt;
 

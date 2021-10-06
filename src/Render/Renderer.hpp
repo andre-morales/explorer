@@ -129,10 +129,10 @@ static constexpr float fog_diamond[] = {
 	-.5, 0.0, 0.5,
 	0.5, 0.0, 0.5,
 };
-static constexpr unsigned char mod(signed int x, unsigned char m){ return (x % m + m) % m; }
-static constexpr float cosdf(float angle){ return cosf(angle*RADS); }
-static constexpr float sindf(float angle){ return sinf(angle*RADS); }
-static constexpr const char* __FACES[] = { "top", "bottom", "west", "east", "front", "back" };
+static constexpr unsigned char mod(signed int x, unsigned char m){ return (x % m + m) % m; }*/
+static float cosdf(float angle){ return std::cosf(angle*RADS); }
+static float sindf(float angle){ return std::sinf(angle * RADS); }
+/*static constexpr const char* __FACES[] = {"top", "bottom", "west", "east", "front", "back"};
 static constexpr const char* __FACING[] = {	"north", "east", "south", "west" };
 static constexpr const char* getFaceName(unsigned char face){ return __FACES[face]; }
 static constexpr const char* getFacingDirection(double rx){ return __FACING[mod(floor(rx/90+0.5), 4)]; }*/

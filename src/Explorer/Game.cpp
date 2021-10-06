@@ -40,7 +40,7 @@ Game::Game(Explorer& exp)
 	lastMX = -1;
 	lastMY = -1;
 	camera->pos.y = 50;
-	camera->rot.x = 90;
+	camera->rot.x = 0;
 	log("Game", "Built!");
 }
 
@@ -63,16 +63,14 @@ void Game::init(){
 
 bool Game::connect(std::string ip, uint16 port){
 	log("Game", "Connecting to " + ip + ":" + std::to_string(port));
-	Socket* _socket = nullptr;
 	try {
-		_socket = new Socket(ip.c_str(), port);
+		socket = new BufferedSocket(Un<Socket>(ip.c_str(), port));
+		socket->init(16384);
+		log("Game", "Connected.");
 	} catch (const SocketException& se){
 		log("Game", "Connection failed!");
 		return false;
 	}
-	socket = new BufferedSocket(_socket);
-	socket->init(16384);
-	log("Game", "Connected.");
 	return true;
 }
 
@@ -123,6 +121,8 @@ void Game::stop(){
 }
 
 void Game::disconnect(){
+	net_disconnect();
+
 	delete socket;
 	socket = nullptr;
 	log("Game", "Disconnected.");
@@ -204,6 +204,16 @@ void Game::update(double timeDelta){
 	float speed = timeDelta * 60 * 1;
 
 	if(gameFocused && !chatOpen){
+		if(win.getKey(IKEY_O)){
+			planet->dayTime -= 0.01;
+		} else if(win.getKey(IKEY_P)){
+			planet->dayTime += 0.01;
+		}
+		if(win.getKey(IKEY_K)){
+			planet->sunXRotation -= 1;
+		} else if(win.getKey(IKEY_L)){
+			planet->sunXRotation += 1;
+		}
 		if(win.getKey(IKEY_A)){
 			cm.pos.x -= cos(cm.rot.y * RADS) * speed;
 			cm.pos.z -= sin(cm.rot.y * RADS) * speed;
@@ -317,7 +327,7 @@ void Game::closeChat(){
 	chatGUI->setVisible(false);
 }
 
-Shared<Component> Game::makePauseMenu(){
+sh<Component> Game::makePauseMenu(){
 	auto& ui = *explorer.ui;
 	auto root = Sh<Component>(Sh<StackLayout>());
 	root->name = "game_pause_menu";
@@ -382,21 +392,12 @@ Shared<Component> Game::makePauseMenu(){
 	return root;
 }
 
-Shared<Component> Game::makeChatPanel(){
+sh<Component> Game::makeChatPanel(){
 	auto root = Sh<BorderPane>();
 	root->setVisible(false);
 	root->name = "game_chat";
 	root->setBackground({0, 0, 0, 0});
 	root->insets = {5, 5, 5, 5};
-
-	chatInputField = root->addT(explorer.ui->clTextField(""));
-	chatInputField->insets = {3, 3, 3, 3};
-	chatInputField->textOrientation = Orientation::LEFT_MIDDLE;
-	chatInputField->setBounds(0, 0, 0, 28);
-	chatInputField->setBackground({0.4f, 0.4f, 0.4f, 1});
-	chatInputField->bgSprite.reset();
-	root->setOrientation(0, Orientation::CENTER_BOTTOM);
-	root->setGrowRule(0, 1.0, 0.0);
 
 	auto chatLog_ = root->addNew<Component>(Sh<StackLayout>());
 	chatLog_->setBackground(false);
@@ -405,28 +406,44 @@ Shared<Component> Game::makeChatPanel(){
 	chatLogLabel->setBackground(false);
 	chatLogLabel->textOrientation = Orientation::LEFT_BOTTOM;
 	chatLogLabel->textSize = 2;
-	root->setOrientation(1, Orientation::CENTER_MIDDLE);
-	root->setGrowRule(1, 1.0, 1.0);
+	root->setOrientation(0, Orientation::CENTER_MIDDLE);
+	root->setGrowRule(0, 1.0, 1.0);
+
+	chatInputField = root->addT(explorer.ui->clTextField(""));
+	chatInputField->insets = {3, 3, 3, 3};
+	chatInputField->textOrientation = Orientation::LEFT_MIDDLE;
+	chatInputField->setBounds(0, 0, 0, 28);
+	chatInputField->setBackground({0.4f, 0.4f, 0.4f, 1});
+	chatInputField->bgSprite.reset();
+	root->setOrientation(1, Orientation::CENTER_BOTTOM);
+	root->setGrowRule(1, 1.0, 0.0);
 	return root;
 }
 
 void Game::net_requestChunk(uint64 id){
-	net_outPacket.op(PacketCode::CHUNK);
+	net_outPacket.opcode = PacketCode::CHUNK;
 	net_outPacket.data = (byte*)&id;
 	net_outPacket.length = 8;
 	net_send();
 }
 
 void Game::net_sendChatMessage(){
-	net_outPacket.op(PacketCode::CHAT_MSG);
 	auto& text = chatInputField->text;
+	net_outPacket.opcode = PacketCode::CHAT_MSG;
 	net_outPacket.data = (byte*)text.c_str();
 	net_outPacket.length = text.length();
 	net_send();
 }
 
+void Game::net_disconnect () {
+	net_outPacket.opcode = PacketCode::DISCONNECT;
+	net_outPacket.data = nullptr;
+	net_outPacket.length = 0;
+	net_send();
+}
+
 void Game::net_join(){
-	net_outPacket.op(PacketCode::JOIN);
+	net_outPacket.opcode = PacketCode::JOIN;
 	net_outPacket.data = (byte*)name.c_str();
 	net_outPacket.length = name.length();
 	net_send();
@@ -459,11 +476,12 @@ bool Game::net_receive(){
 	net_inPacket.opcode = 0;
 	return false;
 }
+
 void Game::net_process(){
 	if(net_inPacket.opcode == 0) return;
 	Packet& packet = net_inPacket;
 
-	switch((PacketCode)packet.opcode){
+	switch(packet.opcode){
 	case PacketCode::CHUNK: {
 		auto id = *((uint64*)packet.data);
 
@@ -504,6 +522,7 @@ void Game::net_process(){
 	delete packet.data;
 	packet.data = nullptr;
 }
+
 void Game::net_send(){
 	net_outPacket.send(socket);
 }
