@@ -1,14 +1,19 @@
 #pragma once
+#include "Render/GL.h"
 #include "ilib/mem.h"
 #include "ilib/types.h"
+#include "ilib/obs_unordered_map.h"
 
 class Window;
 
 class GLContext {
 public:
 	Weak<Window> window;
+	obs_unordered_map<std::string, uint32> buffers;
+	obs_unordered_map<std::string, sh<class Shader>> shaders;
+	GL::GLContext version;
 
-	GLContext(Shared<Window>);
+	GLContext(GL::GLContext, Shared<Window>);
 	~GLContext();
 
 	int getWidth();
@@ -16,12 +21,6 @@ public:
 	float getAspect();
 
 	// -- OpenGL Functions --
-	bool fog, texture2d, depthTesting, alphaTesting, blending, lighting, faceCulling;
-	bool vertsArray, uvsArray, normalsArray, colorsArray;
-	uint32 blendingSource, blendingDestination, shadingModel;
-	uint32 texture2dId, arrayBufferId;
-	bool colorMaterial;
-
 	void enableFog();
 	void disableFog();
 
@@ -40,6 +39,7 @@ public:
 
 	void setShadingModel(uint32);
 
+	bool lighting = false;
 	void setLighting(bool);
 	void enableLighting();
 	void disableLighting();
@@ -48,6 +48,7 @@ public:
 	void enableFaceCulling();
 	void disableFaceCulling();
 
+	bool colorsArray = false;
 	void enableVertsArray();
 	void disableVertsArray();
 
@@ -65,11 +66,21 @@ public:
 	void enableColorMaterial();
 	void disableColorMaterial();
 
+	// OpenGL 1.5
+	void bindArrayBuffer(const std::string&);
+
 	// OpenGL 2.0
 	uint32 shaderId;
 	void bindShader(uint32);
+	void bindShader(const std::string&);
 
 	// OpenGL 3.0
 	uint32 frameBufferId;
 	void bindFramebuffer(uint32);	
+private:
+	bool fog, texture2d, depthTesting, alphaTesting, blending, faceCulling;
+	bool vertsArray, uvsArray, normalsArray;
+	uint32 blendingSource, blendingDestination, shadingModel;
+	uint32 texture2dId, arrayBufferId;
+	bool colorMaterial;
 };

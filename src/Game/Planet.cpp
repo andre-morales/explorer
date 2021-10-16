@@ -44,6 +44,7 @@ void Planet::getChunkNeighbours(const Chunk& c, Chunk*& l, Chunk*& r, Chunk*& f,
 	f = getChunk(c.cx, c.cy, c.cz + 1);
 	b = getChunk(c.cx, c.cy, c.cz - 1);
 };
+
 void Planet::getChunkNeighbours8(const Chunk& c, Chunk** nb){
 	nb[0] = getChunk(c.cx - 1, c.cy, c.cz);
 	nb[1] = getChunk(c.cx - 1, c.cy, c.cz + 1);
@@ -54,13 +55,14 @@ void Planet::getChunkNeighbours8(const Chunk& c, Chunk** nb){
 	nb[6] = getChunk(c.cx    , c.cy, c.cz - 1);
 	nb[7] = getChunk(c.cx - 1, c.cy, c.cz - 1);
 };
+
 void Planet::deleteChunk(int32 sx, int32 sy, int32 sz){
 	deleteChunk(Chunk::ID(sx, sy, sz));
 }
+
 void Planet::deleteChunk(uint64 id){
 	auto it = chunkMap.find(id);
 	Chunk* ch = it->second;
-	//ch->deleted = true;
 	chunkSet.erase(ch);
 	chunkMap.erase(it);
 	delete ch;

@@ -9,20 +9,20 @@
       <Configuration>Debug</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="DRelease|Win32">
-      <Configuration>DRelease</Configuration>
+    <ProjectConfiguration Include="Debug-Fast|Win32">
+      <Configuration>Debug-Fast</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="DRelease|x64">
-      <Configuration>DRelease</Configuration>
+    <ProjectConfiguration Include="Debug-Fast|x64">
+      <Configuration>Debug-Fast</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="Fast|Win32">
-      <Configuration>Fast</Configuration>
+    <ProjectConfiguration Include="Quick|Win32">
+      <Configuration>Quick</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="Fast|x64">
-      <Configuration>Fast</Configuration>
+    <ProjectConfiguration Include="Quick|x64">
+      <Configuration>Quick</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="Release|Win32">
@@ -33,16 +33,27 @@
       <Configuration>Release</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug-Remote|Win32">
+      <Configuration>Debug-Remote</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug-Remote|x64">
+      <Configuration>Debug-Remote</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ext\ilib\IO\CircularBuffer.cpp" />
+    <ClCompile Include="ext\ilib\IO\Compression\Inflate.cpp" />
+    <ClCompile Include="ext\ilib\IO\Compression\InflateStream.cpp" />
+    <ClCompile Include="ext\ilib\IO\Console.cpp" />
+    <ClCompile Include="ext\ilib\IO\Stream.cpp" />
     <ClCompile Include="src\Explorer\ClientChunk.cpp" />
     <ClCompile Include="src\GUI\Layouts\Layout.cpp" />
     <ClCompile Include="src\GUI\Components\ScrollBar.cpp" />
     <ClCompile Include="src\Explorer\ExplorerImpl.cpp" />
-    <ClCompile Include="ext\ilib\logging.cpp" />
     <ClCompile Include="ext\ilib\Math\noise.cpp" />
     <ClCompile Include="ext\ilib\Math\prng.cpp" />
-    <ClCompile Include="ext\ilib\Net\BufferedSocket.cpp" />
     <ClCompile Include="ext\ilib\Net\Networking.cpp" />
     <ClCompile Include="ext\ilib\Net\Socket.cpp" />
     <ClCompile Include="ext\ilib\thread.cpp" />
@@ -69,11 +80,11 @@
     <ClCompile Include="src\GUI\Components\GridPane.cpp" />
     <ClCompile Include="src\GUI\Components\Label.cpp" />
     <ClCompile Include="src\GUI\Components\ScrollView.cpp" />
-    <ClCompile Include="src\GUI\Components\SplitPane.cpp" />
     <ClCompile Include="src\GUI\Components\TextField.cpp" />
     <ClCompile Include="src\GUI\Event\CharEvent.cpp" />
     <ClCompile Include="src\GUI\Event\KeyEvent.cpp" />
     <ClCompile Include="src\GUI\GUI.cpp" />
+    <ClCompile Include="src\GUI\Layouts\SplitLayout.cpp" />
     <ClCompile Include="src\GUI\Sprite.cpp" />
     <ClCompile Include="src\GUI\Text.cpp" />
     <ClCompile Include="src\Net\Packet.cpp" />
@@ -84,20 +95,35 @@
     <ClCompile Include="src\Render\GLContext.cpp" />
     <ClCompile Include="src\Render\Image.cpp" />
     <ClCompile Include="src\Render\Renderer.cpp" />
+    <ClCompile Include="src\Render\RendererImpl.cpp" />
+    <ClCompile Include="src\Render\Shader.cpp" />
     <ClCompile Include="src\Render\Texture.cpp" />
     <ClCompile Include="src\Render\TextureAtlas.cpp" />
     <ClCompile Include="src\GUI\Layouts\StackLayout.cpp" />
+    <ClCompile Include="src\GUI\Components\Toggle.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ext\ilib\IO\CircularBuffer.h" />
+    <ClInclude Include="ext\ilib\IO\Compression\Inflate.h" />
+    <ClInclude Include="ext\ilib\IO\Compression\InflateStream.h" />
+    <ClInclude Include="ext\ilib\IO\Console.h" />
+    <ClInclude Include="ext\ilib\Net\ASocket.h" />
+    <ClInclude Include="ext\zlib\zlib.h" />
     <ClInclude Include="src\Explorer\ClientChunk.h" />
+    <ClInclude Include="src\Explorer\Explorer.h" />
+    <ClInclude Include="src\Explorer\Version.h" />
+    <ClInclude Include="src\Game\Chunk.h" />
     <ClInclude Include="src\Game\Chunk.hpp" />
+    <ClInclude Include="src\GUI\Components\Toggle.h" />
     <ClInclude Include="src\GUI\Layouts\Layout.h" />
     <ClInclude Include="src\GUI\Components\ScrollBar.h" />
     <ClInclude Include="src\Explorer\ExplorerImpl.h" />
     <ClInclude Include="src\Explorer\GameImpl.h" />
+    <ClInclude Include="src\GUI\Layouts\SplitLayout.h" />
     <ClInclude Include="src\GUI\Layouts\StackLayout.h" />
+    <ClInclude Include="src\Render\RendererImpl.h" />
   </ItemGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Fast|x64'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Quick|x64'">
     <ClCompile>
       <AdditionalIncludeDirectories>src;ext;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>EXPLORER_CLIENT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -135,12 +161,12 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>msvc\lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw3dll.lib;glew32.lib;ws2_32.lib;opengl32.lib;ucrt.lib;vcruntime.lib;msvcrt.lib;msvcprt.lib</AdditionalDependencies>
+      <AdditionalDependencies>zlib.lib;glfw3dll.lib;glew32.lib;ws2_32.lib;opengl32.lib;ucrt.lib;vcruntime.lib;msvcrt.lib;msvcprt.lib</AdditionalDependencies>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Fast|Win32'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Quick|Win32'">
     <ClCompile>
       <AdditionalIncludeDirectories>src;ext;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>EXPLORER_CLIENT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -220,11 +246,11 @@
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
       <OpenMPSupport>false</OpenMPSupport>
       <SupportJustMyCode>false</SupportJustMyCode>
-      <EnableEnhancedInstructionSet>NoExtensions</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>msvc\lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw3dll.lib;glew32.lib;ws2_32.lib;opengl32.lib;vcruntime.lib;msvcrt.lib;msvcprt.lib;ucrt.lib</AdditionalDependencies>
+      <AdditionalDependencies>zlib64.lib;glfw3dll.lib;glew32.lib;ws2_32.lib;opengl32.lib;vcruntime.lib;msvcrt.lib;msvcprt.lib;ucrt.lib</AdditionalDependencies>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <OptimizeReferences>true</OptimizeReferences>
       <LinkStatus>false</LinkStatus>
@@ -279,7 +305,7 @@
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DRelease|x64'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug-Fast|x64'">
     <ClCompile>
       <AdditionalIncludeDirectories>src;ext;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>EXPLORER_CLIENT;RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -329,7 +355,107 @@
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DRelease|Win32'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug-Remote|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>src;ext;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>EXPLORER_CLIENT;RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <Optimization>MaxSpeed</Optimization>
+      <SmallerTypeCheck>
+      </SmallerTypeCheck>
+      <BasicRuntimeChecks>
+      </BasicRuntimeChecks>
+      <BufferSecurityCheck>
+      </BufferSecurityCheck>
+      <ControlFlowGuard>
+      </ControlFlowGuard>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard_C>stdc11</LanguageStandard_C>
+      <OmitFramePointers>true</OmitFramePointers>
+      <RemoveUnreferencedCodeData>true</RemoveUnreferencedCodeData>
+      <RuntimeTypeInfo>
+      </RuntimeTypeInfo>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <EnableFiberSafeOptimizations>
+      </EnableFiberSafeOptimizations>
+      <OmitDefaultLibName>
+      </OmitDefaultLibName>
+      <ConformanceMode>
+      </ConformanceMode>
+      <ForceConformanceInForLoopScope>
+      </ForceConformanceInForLoopScope>
+      <EnforceTypeConversionRules>
+      </EnforceTypeConversionRules>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
+      <DisableSpecificWarnings>26812;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
+      <OpenMPSupport>false</OpenMPSupport>
+      <SupportJustMyCode>false</SupportJustMyCode>
+      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>msvc\lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3dll.lib;glew32.lib;ws2_32.lib;opengl32.lib;vcruntime.lib;msvcrt.lib;msvcprt.lib;ucrt.lib</AdditionalDependencies>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <OptimizeReferences>true</OptimizeReferences>
+      <LinkStatus>false</LinkStatus>
+      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug-Fast|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>src;ext;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>EXPLORER_CLIENT;RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <Optimization>MaxSpeed</Optimization>
+      <SmallerTypeCheck>
+      </SmallerTypeCheck>
+      <BasicRuntimeChecks>
+      </BasicRuntimeChecks>
+      <BufferSecurityCheck>
+      </BufferSecurityCheck>
+      <ControlFlowGuard>
+      </ControlFlowGuard>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard_C>stdc11</LanguageStandard_C>
+      <OmitFramePointers>true</OmitFramePointers>
+      <RemoveUnreferencedCodeData>true</RemoveUnreferencedCodeData>
+      <RuntimeTypeInfo>
+      </RuntimeTypeInfo>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <EnableFiberSafeOptimizations>
+      </EnableFiberSafeOptimizations>
+      <OmitDefaultLibName>
+      </OmitDefaultLibName>
+      <ConformanceMode>
+      </ConformanceMode>
+      <ForceConformanceInForLoopScope>
+      </ForceConformanceInForLoopScope>
+      <EnforceTypeConversionRules>
+      </EnforceTypeConversionRules>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
+      <DisableSpecificWarnings>26812;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
+      <OpenMPSupport>false</OpenMPSupport>
+      <SupportJustMyCode>false</SupportJustMyCode>
+      <EnableEnhancedInstructionSet>NoExtensions</EnableEnhancedInstructionSet>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>msvc\lib32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3dll.lib;glew32.lib;ws2_32.lib;opengl32.lib;vcruntime.lib;msvcrt.lib;msvcprt.lib;ucrt.lib</AdditionalDependencies>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <OptimizeReferences>true</OptimizeReferences>
+      <LinkStatus>false</LinkStatus>
+      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug-Remote|Win32'">
     <ClCompile>
       <AdditionalIncludeDirectories>src;ext;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>EXPLORER_CLIENT;RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -413,12 +539,12 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>msvc\lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw3dll.lib;glew32.lib;ws2_32.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>zlib64.lib;glfw3dll.lib;glew32.lib;ws2_32.lib;opengl32.lib;msvcrtd.lib;vcruntimed.lib;msvcprtd.lib;ucrtd.lib</AdditionalDependencies>
       <GenerateDebugInformation>
       </GenerateDebugInformation>
       <AssemblyDebug>
       </AssemblyDebug>
-      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -472,12 +598,12 @@
     <ProjectName>ExplorerClient</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Fast|x64'">
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Quick|x64'">
     <PlatformToolset>v142</PlatformToolset>
     <EnableASAN />
     <PreferredToolArchitecture>x64</PreferredToolArchitecture>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Fast|Win32'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Quick|Win32'" Label="Configuration">
     <PlatformToolset>v142</PlatformToolset>
     <EnableASAN />
     <PreferredToolArchitecture>x64</PreferredToolArchitecture>
@@ -492,12 +618,22 @@
     <EnableASAN />
     <PreferredToolArchitecture>x64</PreferredToolArchitecture>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DRelease|x64'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-Fast|x64'" Label="Configuration">
     <PlatformToolset>v142</PlatformToolset>
     <EnableASAN />
     <PreferredToolArchitecture>x64</PreferredToolArchitecture>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DRelease|Win32'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-Remote|x64'" Label="Configuration">
+    <PlatformToolset>v142</PlatformToolset>
+    <EnableASAN />
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-Fast|Win32'" Label="Configuration">
+    <PlatformToolset>v142</PlatformToolset>
+    <EnableASAN />
+    <PreferredToolArchitecture>x86</PreferredToolArchitecture>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-Remote|Win32'" Label="Configuration">
     <PlatformToolset>v142</PlatformToolset>
     <EnableASAN />
     <PreferredToolArchitecture>x86</PreferredToolArchitecture>
@@ -520,12 +656,12 @@
   <ImportGroup Label="Shared">
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Fast|x64'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Quick|x64'">
     <OutDir>$(SolutionDir)msvc\build_cache\out\$(Configuration)_$(Platform)\</OutDir>
     <IntDir>$(SolutionDir)msvc\build_cache\obj\$(Configuration)_$(Platform)\</IntDir>
     <GenerateManifest>false</GenerateManifest>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Fast|Win32'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Quick|Win32'">
     <OutDir>$(SolutionDir)msvc\build_cache\out\$(Configuration)_$(Platform)\</OutDir>
     <IntDir>$(SolutionDir)msvc\build_cache\obj\$(Configuration)_$(Platform)\</IntDir>
     <GenerateManifest>false</GenerateManifest>
@@ -539,12 +675,22 @@
     <IntDir>$(SolutionDir)msvc\build_cache\obj\$(Configuration)_$(Platform)\</IntDir>
     <GenerateManifest>false</GenerateManifest>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DRelease|x64'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-Fast|x64'">
     <OutDir>$(SolutionDir)msvc\build_cache\out\$(Configuration)_$(Platform)\</OutDir>
     <IntDir>$(SolutionDir)msvc\build_cache\obj\$(Configuration)_$(Platform)\</IntDir>
     <GenerateManifest>false</GenerateManifest>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DRelease|Win32'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-Remote|x64'">
+    <OutDir>$(SolutionDir)msvc\build_cache\out\$(Configuration)_$(Platform)\</OutDir>
+    <IntDir>$(SolutionDir)msvc\build_cache\obj\$(Configuration)_$(Platform)\</IntDir>
+    <GenerateManifest>false</GenerateManifest>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-Fast|Win32'">
+    <IntDir>$(SolutionDir)msvc\build_cache\obj\$(Configuration)_$(Platform)\</IntDir>
+    <GenerateManifest>false</GenerateManifest>
+    <OutDir>$(SolutionDir)msvc\build_cache\out\$(Configuration)_$(Platform)\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-Remote|Win32'">
     <IntDir>$(SolutionDir)msvc\build_cache\obj\$(Configuration)_$(Platform)\</IntDir>
     <GenerateManifest>false</GenerateManifest>
     <OutDir>$(SolutionDir)msvc\build_cache\out\$(Configuration)_$(Platform)\</OutDir>

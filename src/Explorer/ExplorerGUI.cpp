@@ -9,6 +9,8 @@
 #include "GUI/Components/Button.h"
 #include "GUI/Components/Label.h"
 #include "GUI/Components/TextField.h"
+#include "GUI/Components/Toggle.h"
+#include "GUI/Components/ScrollBar.h"
 #include "GUI/Event/MouseMotionEvent.h"
 #include <string>
 #include "ilib/Math/mat4.h"
@@ -83,9 +85,9 @@ Shared<Component> ExplorerGUI::getPanel(const std::string& name){
 }
 
 Shared<Button> ExplorerGUI::clButton(const char* text){
-	auto btn = mkShared<Button>(text);
+	auto btn = Sh<Button>(text);
 	btn->setFont(explorer.renderer->font);
-	btn->setBackground(explorer.ui->sprites["button"]);
+	btn->setBackground(sprites["button"]);
 	btn->insets = {4, 4, 4, 4};
 	btn->addMouseMotionListener([this](const MouseMotionEvent& mme){
 		if(mme.action == 1){
@@ -118,6 +120,50 @@ sh<TextField> ExplorerGUI::clTextField(const char* text){
 	field->setBackground(explorer.ui->sprites["panel2"]);
 	field->setFont(explorer.renderer->font);
 	return field;
+}
+
+sh<Toggle> ExplorerGUI::clToggle(bool checked, std::function<void(Toggle*, bool)> vl){
+	auto tog = Sh<Toggle>(checked);
+	tog->addMouseMotionListener([this](auto& mme){
+		if(mme.action == 1){
+			mme.source->setBackground({1, 1, 0.5, 1});
+		} else if(mme.action == 2){
+			mme.source->setBackground({1, 1, 1, 1});
+		}
+	});
+	tog->setFont(explorer.renderer->font);
+	tog->setBackground(sprites["button"]);
+	tog->insets = {4, 4, 4, 4};
+	tog->addValueListener(vl);
+	return tog;
+}
+
+sh<ScrollBar> ExplorerGUI::clScroll(){
+	auto sc = Sh<ScrollBar>();
+	sc->setButton(clButton(""));
+	sc->setBackground(sprites["panel2"]);
+
+	auto lbl = sc->add(clLabel(""));
+	lbl->setBackground(false);
+	lbl->enabled = false;
+	return sc;
+}
+
+sh<ScrollBar> ExplorerGUI::clScroll(float v){
+	auto sc = Sh<ScrollBar>(v);
+	sc->setButton(clButton(""));
+	sc->setBackground(sprites["panel2"]);
+
+	auto lbl = sc->add(clLabel(""));
+	lbl->setBackground(false);
+	lbl->enabled = false;
+	return sc;
+}
+
+sh<ScrollBar> ExplorerGUI::clScroll(float v, std::function<void(float)> vl){
+	auto sc = clScroll(v);
+	sc->addValueListener(vl);
+	return sc;
 }
 
 sh<GUI> ExplorerGUI::createGUI(){

@@ -20,6 +20,8 @@ public:
 	std::vector<KeyListener*> keyListeners;
 	std::vector<CharListener*> charListeners;
 
+	GL glSetting;
+
 	Window();
 	Window(int, int, const char*);
 	~Window();
@@ -30,6 +32,7 @@ public:
 	void acquireContext();
 	void releaseContext();
 	void bufferSwap();
+	void setVSync(bool);
 
 	// Window Properties
 	void setTitle(const std::string&);
@@ -72,7 +75,7 @@ public:
 
 private:
 	GLFWwindow* handle = 0;
-	GL glSetting;
+	
 
 	bool fullscreen = false;
 	int posX, posY;

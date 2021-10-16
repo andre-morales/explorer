@@ -1,5 +1,4 @@
 #pragma once
-
 #include "Net/Packet.h"
 #include <thread>
 #include <string>
@@ -15,6 +14,8 @@ public:
 	bool disconnected = false;
 	std::set<sh<Packet>> outQueue;
 	std::mutex outQueueLock;
+	un<Stream> outBuffer;
+
 	void enqueue_sync(const sh<Packet>&);
 };
 

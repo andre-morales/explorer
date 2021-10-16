@@ -1,9 +1,7 @@
 #pragma once
-#include <ilib/types.h>
-
-class Socket;
+#include "ilib/types.h"
 
 class ASocket {
 public:
-	static void spinReadEx(Socket&, byte*, uint32);
+    static void spinReadEx(class Socket&, byte*, uint32);
 };

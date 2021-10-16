@@ -12,6 +12,10 @@ struct KeyEvent {
 		return action == 1;
 	}
 
+	constexpr bool isRepeat() const {
+		return action == 2;
+	}
+
 	constexpr bool isBackspace() const {
 		return key == 259; // GLFW_KEY_BACKSPACE;
 	}

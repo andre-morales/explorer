@@ -15,10 +15,15 @@ public:
 	float max = 1;
 	float increment = 0.01;
 	float value = 0;
+
 	ScrollBar();
+	ScrollBar(float);
+
+	void setValue(float);
 	void setButton(sh<Button>);
 	void setBounds(float, float, float, float) override;
 	void addValueListener(ValueListener);
+	void fireValueListeners();
 private:
 	int clickX = 0;
 	float btnBeginX = 0;

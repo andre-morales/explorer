@@ -36,9 +36,15 @@ Socket::~Socket(){
 }
 
 uint32 Socket::write(const byte* data, uint32 len){
+	if(!len) return 0;
+
 	int res = send(handle, (const char*)data, len, 0);
 	if(res < 0){
-		throw SocketException("Socket writing error. " + getWSAErrorStr());
+		int err = WSAGetLastError();
+		if(blocking || err != WSAEWOULDBLOCK){
+			throw SocketException("Socket write error. " + wsaErrorStr(err));
+		}
+		throw SocketException(SocketException::BUFFER_FULL);
 	}
 	return res;
 }
@@ -55,7 +61,7 @@ uint32 Socket::read(byte* buff, uint32 len){
 	return br;
 }
 
-uint32 Socket::available(){
+uint32 Socket::toRead(){
 	u_long data;
 	ioctlsocket(handle, FIONREAD, &data);
 	return data;

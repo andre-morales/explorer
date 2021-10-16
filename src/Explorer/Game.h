@@ -1,7 +1,7 @@
 #pragma once
 #include "Net/Packet.h"
 #include "ilib/mem.h"
-#include "std/string.h"
+#include <string>
 
 class Explorer;
 struct GameImpl;
@@ -20,28 +20,35 @@ class Game {
 	GameImpl& impl;
 
 public:
-	string name;
+	std::string name;
 	class Universe* universe = 0;
 	class Planet* planet = 0;
 	un<class Camera> camera;
 	un<class TextLog> chatLog;
 	bool chatOpen = false;
 	bool gameFocused = false;
+	float renderDistance = 0;
+	float downKiBps = 0;
+	float upKiBps = 0;
+	uint64 downBytesCounterFull = 0;
+	uint64 upBytesCounterFull = 0;
 
 	Game(Explorer&);
 	~Game();
 
 	// Data construction/destruction
 	void init();
-	bool connect(string, uint16);
+	bool connect(std::string, uint16);
 	void start();
-	void update(double);
 	void stop();
 	void disconnect();
 	void shutdown();
 	void registerListeners();
 	void unregisterListeners();
 	bool areListenersRegistered();
+
+	void update(double);
+	void onSecond();
 	bool isConnected();
 	bool inPlanet();
 
@@ -50,8 +57,7 @@ public:
 
 private:
 	sh<class Player> player;
-	class BufferedSocket* socket = nullptr;
-
+	
 	Packet net_inPacket;
 	Packet net_outPacket;
 
@@ -59,15 +65,11 @@ private:
 	sh<class Component> chatGUI, menuGUI;
 	sh<class TextField> chatInputField;
 	sh<class Label> chatLogLabel;
-	void* keyListener = 0;
-	void* charListener = 0;
-	void* mouseButtonListener = 0;
-	void* mouseMotionListener = 0;
+
 	bool uiOpen = false;
 	bool chatOpening = false;
 	bool menuOpen = false;
-	float renderDistance = 12;
-
+	
 	sh<Component> makePauseMenu();
 	sh<Component> makeChatPanel();
 
@@ -84,5 +86,5 @@ private:
 	void net_requestChunk(uint64);
 	void net_sendChatMessage();
 	void net_disconnect();
-	void log(const string&, const string&);
+	void log(const std::string&, const std::string&);
 };

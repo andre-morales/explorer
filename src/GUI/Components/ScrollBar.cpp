@@ -3,10 +3,20 @@
 #include "GUI/Layouts/StackLayout.h"
 #include "GUI/Event/MouseButtonEvent.h"
 #include "GUI/Event/MouseMotionEvent.h"
-ScrollBar::ScrollBar(){
-	setButton(mkShared<Button>());
-	setLayout(mkShared<StackLayout>());
+
+ScrollBar::ScrollBar() : ScrollBar(0){}
+ScrollBar::ScrollBar(float v) : value(v){
+	setButton(Sh<Button>());
+	setLayout(new StackLayout());
+	setValue(v);
 }
+
+void ScrollBar::setValue (float v) {
+	value = v;
+	button->x = (v - min)/(max - min) * (width - button->width);
+	fireValueListeners();
+}
+
 void ScrollBar::setButton(sh<Button> btn){
 	if(button){
 		remove(button);
@@ -32,17 +42,22 @@ void ScrollBar::setButton(sh<Button> btn){
 			float fval = rang - std::fmod(rang, increment);   // Remove remainder and get final value.
 			if(value != fval){
 				value = fval;
-				for(auto& vl : valueListeners){
-					vl(value);
-				}
+				fireValueListeners();
 			}
 		} 
 	}, true);
 }
 void ScrollBar::setBounds(float x, float y, float w, float h){
 	Component::setBounds(x, y, w, h);
-	button->setBounds(0, 0, w/5, h);
+	float bw = w/5;
+	float bx = (value - min)/(max - min) * (width - bw);
+	button->setBounds(bx, 0, bw, h);
 }
 void ScrollBar::addValueListener(ValueListener vl){
 	valueListeners.emplace_back(vl);
+}
+void ScrollBar::fireValueListeners(){
+	for(auto& vl : valueListeners){
+		vl(value);
+	}
 }

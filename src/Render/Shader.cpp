@@ -1,29 +1,25 @@
-/*#include "Shader.h"
+#include "Shader.h"
+#include "GL/glew.h"
+#include "Exception.h"
 #include <sstream>
 #include <fstream>
-#include <cstring>
-#include <GL/glew.h>
-#include <iostream>
 #include <stack>
-#include "Exception.h"
-using namespace std;
-
-std::string readFile(const char*);
 
 Shader::Shader(){
 	glId = glVertId = glFragId = 0;
 	dirty = true;
 }
 Shader::~Shader(){
-	release();
+	destroy();
 }
 
-void Shader::readShaderFile(const char* file){
+void Shader::readShaderFile(const std::string& file){
 	bool frag = true, vert = true;
-	ostringstream src_oss;
-	ostringstream v_oss, f_oss;
+	std::ostringstream src_oss;
+	std::ostringstream v_oss, f_oss;
 
-	ifstream is(file, ifstream::in);
+	std::ifstream is(file, std::ifstream::in);
+	if(is.fail()) throw Exception("File read error.");
 
 	char buff[512];
 	while(!is.eof()){
@@ -48,7 +44,7 @@ void Shader::readShaderFile(const char* file){
 	glFragStr = f_oss.str();
 	is.close();
 }
-
+/*
 int32 Shader::getUniformID(const std::string& uniform){
 	auto it = uniformLocations.find(uniform);
 	if(it != uniformLocations.end()) return it->second;
@@ -95,10 +91,10 @@ void Shader::setUniform(const char* uniform, const vec2i& vec){
 
 void Shader::setUniform(const char* uniform, const vec2f& vec){
 	glUniform2fv(getUniformID(uniform), 1, vec.vec);
-}
+}*/
 
 void Shader::compile(){
-	release();
+	destroy();
 	glId = glCreateProgram();
 	glVertId = glCreateShader(GL_VERTEX_SHADER);
 	if(!buildShader(glId, glVertId, glVertStr)){
@@ -128,24 +124,24 @@ void Shader::compile(){
 		glGetProgramInfoLog(glId, 1024, &infoLogSize, infoLog);
 		printf("Shader link failed!\n%s\n", infoLog);
 	}
-	uniformLocations.clear();
+	//uniformLocations.clear();
 }
-
+/*
 std::string trimBegin(const std::string& str){
 	int startpos = str.find_first_not_of(" \t");
 	if(string::npos != startpos){
 		return str.substr(startpos);
 	}
 	return str;
-}
+}*/
 
 bool Shader::buildShader(uint32 program, uint32 shader, const std::string& srcStr){
-	ostringstream oss;
+	std::ostringstream oss;
 	bool reading = true; // Will be false inside a #if CONST that results in false.
 	std::stack<bool> ifStack;
-	for(auto& constant : constants){
-		oss << "#define " << constant.first << " " << constant.second << "\n";
-	}
+	//for(auto& constant : constants){
+	//	oss << "#define " << constant.first << " " << constant.second << "\n";
+	//}
 	oss << srcStr;
 
 	const std::string str = oss.str();
@@ -162,25 +158,7 @@ bool Shader::buildShader(uint32 program, uint32 shader, const std::string& srcSt
 	return true;
 }
 
-void Shader::release(){
-	if(glVertId) glDeleteShader(glVertId);
-	if(glFragId) glDeleteShader(glFragId);
-	if(glId) glDeleteProgram(glId);
-}
-
-std::string readFile(const char* file){
-	ostringstream oss;
-	ifstream is(file, ifstream::in);
-
-	char buff[1024];
-	while(!is.eof()){
-		is.getline(buff, 1024);
-		oss << (const char*)buff << '\n';
-	}
-	is.close();
-	return oss.str();
-}
-
+/*
 void Shader::setConstant(const std::string& constant, const std::string& value){
 	constants[constant] = value;
 	dirty = true;
@@ -195,3 +173,9 @@ void Shader::unsetConstant(const std::string& constant){
 	constants.erase(constant);
 	dirty = true;
 }*/
+
+void Shader::destroy(){
+	if(glVertId) glDeleteShader(glVertId);
+	if(glFragId) glDeleteShader(glFragId);
+	if(glId) glDeleteProgram(glId);
+}

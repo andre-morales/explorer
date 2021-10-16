@@ -25,7 +25,7 @@ public:
 	Component* parent = 0;
 	std::string name;
 	std::vector<sh<Component>> children;
-	sh<class Layout> layout;
+	un<class Layout> layout;
 	float x = 0, y = 0;
 	float width = 0, height = 0;
 	vec4f insets;
@@ -51,24 +51,41 @@ public:
 
 	// Constructor/Destructor
 	Component();
-	Component(sh<Layout>);
+	/*Constructs a component given a newly built layout. 
+	  See Component::setLayout. */
+	Component(Layout*&&); // Constructs
 	virtual ~Component();
 
 	// Hierarchy
+	/* Adds a component and returns it right back with an optional position. */
 	virtual sh<Component> add(sh<Component>, int = -1);
+
+	/* Adds a component and returns it right back with an optional position.
+	   This templated version of the function ensures the same return type as the argument. */
 	template <class T> sh<T> addT(sh<T>&& c){
 		add(c);
 		return c;
 	}
+	/* Constructs a component of the specified type with the arguments emplaced. */
 	template <class T, class... Args> sh<T> addNew(Args&&... args){
-		auto ptr = std::shared_ptr<T>(new T(args...));
+		auto ptr = std::make_shared<T>(args...);
 		add(ptr);
 		return ptr;
+	}
+
+	/* Constructs a regular base component with the specified layout
+	   as a template and its layout arguments emplaced. Returns the
+	   constructed element. */
+	template <class LayoutType, class... LayoutArgs>
+	sh<Component> addL(LayoutArgs&&... args){
+		return add(std::make_shared<Component>(new LayoutType(args...)));
 	}
 	virtual Shared<Component> remove(Shared<Component>);
 	virtual Shared<Component> remove(const std::string&);
 	Shared<Component> getChild(const std::string&);
-	void setLayout(sh<Layout>);
+	/* Changes the layout used by this component to organize its children.
+	   The component assumes ownership of layout given to it so be careful. */
+	void setLayout(Layout*&&);
 	void relayout();
 
 	// Drawing

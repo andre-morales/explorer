@@ -4,6 +4,7 @@
 #include "ilib/math/noise.h"
 #include "ilib/obs_unordered_map.h"
 #include <unordered_map>
+#include <mutex>
 #include <set>
 class Chunk;
 class ChunkBatcher;
@@ -17,6 +18,7 @@ public:
 	Noise terrainGen;
 	std::set<Chunk*> chunkSet;
 	obs_unordered_map<uint64, Chunk*> chunkMap;
+	std::mutex lock;
 	#ifdef EXPLORER_CLIENT
 	Unique<ChunkBatcher> chunkBatcher;
 	#endif

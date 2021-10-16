@@ -6,29 +6,25 @@
 #include "GUI/Sprite.h"
 #include "GUI/Components/Component.h"
 #include "GUI/Components/Button.h"
-#include "GUI/Components/SplitPane.h"
 #include "GUI/Components/GridPane.h"
 #include "GUI/Components/Label.h"
 #include "GUI/Components/TextField.h"
 #include "GUI/Layouts/StackLayout.h"
-#include "Game/Event.h"
-#include "ilib/Net/BufferedSocket.h"
-#include "ilib/Net/Socket.h"
+#include "GUI/Layouts/SplitLayout.h"
 
 MainMenuUI::MainMenuUI(Explorer& e) : explorer(e){}
 MainMenuUI::~MainMenuUI(){}
 
 void MainMenuUI::create(){
-	setLayout(Sh<StackLayout>());
+	setLayout(new StackLayout());
 	this->name = "main_menu";
 	auto& tex = explorer.renderer->textures;
     auto& spr = explorer.ui->sprites;
 
 	setBackground(tex["title_bg"]);
 	bgSprite->scalingMode = ScalingMode::STRETCH;
-	auto root = addT(mkShared<SplitPane>());
+	auto root = add(Sh<Component>(new SplitLayout(SplitLayout::HORIZONTAL, 0.35)));
 	root->setBackground({0, 0, 0, 0});
-	root->value = 0.35;
 	root->insets = {8, 8, 8, 8};
 
 	auto menu = mkShared<GridPane>();

@@ -2,80 +2,7 @@
 #include <cmath>
 #define RADS (3.14159265359/180.0)
 
-static constexpr float skybox_verts[] = {
-	// Left
-	-.5, .5, -.5,
-	-.5, .5, .5,
-	-.5, -.5, .5,
-	-.5, -.5, -.5,
 
-	// Front
-	.5, .5, -.5,
-	-.5, .5, -.5,
-	-.5, -.5, -.5,
-	.5, -.5, -.5,
-
-	// Right
-	.5, .5, .5,
-	.5, .5, -.5,
-	.5, -.5, -.5,
-	.5, -.5, .5,
-
-	// Back
-	-.5, .5, .5,
-	.5, .5, .5,
-	.5, -.5, .5,
-	-.5, -.5, .5,
-
-	// Bottom
-	.5, -.5, -.5,
-	-.5, -.5, -.5,
-	-.5, -.5, .5,
-	.5, -.5, .5,
-
-	// Top
-	.5, .5, -.5,
-	-.5, .5, -.5,
-	-.5, .5, .5,
-	.5, .5, .5,
-};
-static constexpr float skybox_uvs[] = {
-	// Left
-	0.250, 0.3333333333,
-	0.000, 0.3333333333,
-	0.000, 0.6666666666,
-	0.250, 0.6666666666,
-
-	// Front
-	0.500, 0.3333333333,
-	0.250, 0.3333333333,
-	0.250, 0.6666666666,
-	0.500, 0.6666666666,
-
-	// Right
-	0.750, 0.3333333333,
-	0.500, 0.3333333333,
-	0.500, 0.6666666666,
-	0.750, 0.6666666666,
-
-	// Back
-	1.000, 0.3333333333,
-	0.750, 0.3333333333,
-	0.750, 0.6666666666,
-	1.000, 0.6666666666,
-
-	// Bottom
-	0.500, 0.66666666666666,
-	0.250, 0.66666666666666,
-	0.250, 1.0000,
-	0.500, 1.0000,
-
-	// Top
-	0.500, 0.3333333333,
-	0.250, 0.3333333333,
-	0.250, 0.0000,
-	0.500, 0.0000,
-};
 /*
 static constexpr float crosshair_verts[] = {
 	-0.002, -0.022,
@@ -130,8 +57,22 @@ static constexpr float fog_diamond[] = {
 	0.5, 0.0, 0.5,
 };
 static constexpr unsigned char mod(signed int x, unsigned char m){ return (x % m + m) % m; }*/
-static float cosdf(float angle){ return std::cosf(angle*RADS); }
-static float sindf(float angle){ return std::sinf(angle * RADS); }
+
+constexpr void interleave(byte* output, uintptr size, const void* in1, uint8 size1, const void* in2, uint8 size2) {
+	byte* pntr = output;
+	byte* input1 = (byte*)in1;
+	byte* input2 = (byte*)in2;
+
+	while(pntr < output + size) {
+		memcpy(pntr, input1, size1);
+		pntr += size1;
+		input1 += size1;
+
+		memcpy(pntr, input2, size2);
+		pntr += size2;
+		input2 += size2;
+	}
+}
 /*static constexpr const char* __FACES[] = {"top", "bottom", "west", "east", "front", "back"};
 static constexpr const char* __FACING[] = {	"north", "east", "south", "west" };
 static constexpr const char* getFaceName(unsigned char face){ return __FACES[face]; }

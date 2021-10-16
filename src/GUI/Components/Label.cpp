@@ -7,6 +7,8 @@ Label::Label() : Label(""){}
 
 Label::Label(const std::string& text) : Component(){
 	this->text = text;
+    this->background = false;
+    this->enabled = false;
 }
 
 void Label::paintComponent(GLContext& gi, vec2f anch){

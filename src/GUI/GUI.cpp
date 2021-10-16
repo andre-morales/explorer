@@ -11,7 +11,7 @@
 #include "GL/glew.h"
 #include <iostream>
 
-GUI::GUI(Shared<GLContext> glc) : context(glc), root(new Component(Sh<StackLayout>())){
+GUI::GUI(Shared<GLContext> glc) : context(glc), root(new Component(new StackLayout())){
 	root->setBackground(false);
 	root->ownerGUI = this;
 	auto win = glc->window.lock();

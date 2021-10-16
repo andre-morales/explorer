@@ -1,6 +1,8 @@
 #include "thread.h"
 
-Thread::~Thread(){}
+Thread::~Thread(){
+	interruptAndWait();
+}
 
 void Thread::join(){
 	thread.join();
@@ -10,7 +12,7 @@ void Thread::interrupt(){
 }
 void Thread::interruptAndWait(){
 	interrupt();
-	join();
+	if(thread.joinable()) join();
 }
 bool Thread::getInterruptFlag(){
 	return interruptFlag;
