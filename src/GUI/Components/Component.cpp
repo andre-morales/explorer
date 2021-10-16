@@ -19,8 +19,8 @@ Component::Component(){
 	this->bgColor = {1, 1, 1, 1};
 	this->fgColor = {1, 1, 1, 1};
 }
-Component::Component(sh<Layout> l) : Component() {
-	setLayout(l);
+Component::Component(Layout*&& l) : Component() {
+	setLayout(std::move(l));
 }
 Component::~Component(){}
 
@@ -111,7 +111,7 @@ void Component::paintComponent(GLContext& gi, vec2f anch){
 			switch(bgSprite->scalingMode) {
 			default:
 			case ScalingMode::STRETCH:
-				glTexCoordPointer(2, GL_FLOAT, 0, Quad::uvs);
+				glTexCoordPointer(2, GL_FLOAT, 0, Geometry::Quad::uvs);
 				glVertexPointer(2, GL_FLOAT, 0, cverts);
 				glDrawArrays(GL_QUADS, 0, 4);
 				break;
@@ -246,8 +246,8 @@ void Component::paintComponent(GLContext& gi, vec2f anch){
 	}
 }
 
-void Component::setLayout(sh<Layout> l){
-	layout = l;
+void Component::setLayout(Layout*&& l){
+	layout.reset(l);
 	if(layout->component){
 		throw Exception("This layout was already assigned to a component!");
 	}

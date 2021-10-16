@@ -6,6 +6,7 @@
 
 class Chunk {
 public:
+	//                      Y   X   Z
 	typedef Block ChunkData[24][24][24];
 
 	enum class State {
@@ -19,6 +20,8 @@ public:
 
 	bool batchedCenter = false;
 	bool batchedCorners = false;
+
+	uint32 vbo = 0;
 
 	uint32 allocatedVerts = 0;  // Max allocated vertices
 	uint32 batchedVertsLen = 0; // Actual used vertices
@@ -35,9 +38,10 @@ public:
 	byte* cornerColorsP = 0; // Start of corner colors
 	byte* genColorsP = 0;    // Color write head
 
-	float* batchedNormals = 0;
-	float* cornerNormalsP = 0;
-	float* genNormalsP = 0;
+	int8* batchedNormals = 0;
+	int8* cornerNormalsP = 0;
+	int8* genNormalsP = 0;
+
 	Planet* planet;
 	ChunkData* blocks = 0;
 	uint64 id;
@@ -47,7 +51,7 @@ public:
 	Chunk(Planet*, int32, int32, int32);
 	~Chunk();
 
-	void allocateBlocks();
+	void allocateBlocks(bool);
 	void batch();
 	void batchCenter();
 	void batchCorners();

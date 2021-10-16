@@ -6,7 +6,7 @@ public:
 	bool interruptFlag = false;
 	std::thread thread;
 
-    
+	Thread(){}
 	Thread(std::thread&& t) : thread(std::move(t)){}
 	template<class F>
 	Thread(F fun) : thread(fun){}

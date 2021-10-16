@@ -4,18 +4,19 @@
 
 class ConsoleUI : public Component {
 public:
-	Shared<class Label> consoleLabel;
-	Shared<class TextField> inputField;
+	sh<class Label> consoleLabel;
+	sh<class TextField> inputField;
 
 	ConsoleUI(Explorer&);
 	~ConsoleUI();
 
 	void create();
 	void setBounds(float, float, float, float) override;
-	//void onKey(int, int, int, int) override;
 
 	void log(const std::string&);
 private:
+	std::vector<std::string> cmdHistory;
+	int cmdNav = -1;
 	Explorer& explorer;
-	Shared<Component> subRoot, consoleScroll;
+	sh<Component> subRoot, consoleScroll;
 };

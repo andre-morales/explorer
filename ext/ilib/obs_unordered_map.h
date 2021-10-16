@@ -1,7 +1,7 @@
 #pragma once
 #include <unordered_map>
 
-template<class K, class V> struct obs_unordered_map {
+template<class K, class V, auto defaultValue = 0> struct obs_unordered_map {
 	std::unordered_map<K, V> map;
 
 	typedef typename std::unordered_map<K, V>::iterator iterator_t;
@@ -11,7 +11,7 @@ template<class K, class V> struct obs_unordered_map {
 		if(it != map.end()){
 			return it->second;
 		}
-		return { nullptr };
+		return defaultValue;
 	}
 	template <class... Args>
 	void emplace(Args&&... args){

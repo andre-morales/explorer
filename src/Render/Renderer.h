@@ -2,7 +2,7 @@
 #include "ilib/mem.h"
 #include "ilib/types.h"
 #include "Render/GL.h"
-#include "ilib/obs_map.h"
+#include "ilib/obs_unordered_map.h"
 
 class Explorer;
 class Window;
@@ -12,31 +12,43 @@ class TextureAtlas;
 class Font;
 
 class Renderer {
+private:
+	class RendererImpl* impl_;
+	RendererImpl& impl;
 public:
-    Explorer& explorer;
+	Explorer& explorer;
 	Shared<Window> window;
 	Shared<GLContext> context;
-	obs_map<std::string, Shared<Texture>> textures;
+	obs_unordered_map<std::string, Shared<Texture>> textures;
 	Shared<Font> font;
 
-	bool chunkColors = true;
+	bool chunkColors = true, chunkLighting = true;
+	bool debugChunkState = false;
 
 	Renderer(Explorer&);
 	~Renderer();
 
-	void init(GL);
+	void init(GL::GLContext);
 	void loadResources();
 	void begin();
 	void shutdown();
 	void render();
-	void bindTexture(const char*);
-	Shared<Texture> getTexture(const char*);
-	Shared<TextureAtlas> getAtlas(const char*);
-	Shared<Texture> loadTexture(const char*);
-	Shared<Texture> loadTexture(const char*, bool, bool);
-	Shared<TextureAtlas> loadAtlas(const char*, uint32, uint32);
+
+	void freeChunk(class Chunk*);
+
+	sh<Texture> getTexture(const char*);
+	sh<TextureAtlas> getAtlas(const char*);
+
+	sh<Texture> loadTexture(const std::string& name);
+	sh<Texture> loadTexture(const std::string& name, const std::string& file);
+
+	sh<Texture> loadTexture(const std::string& name, bool, bool);
+	sh<Texture> loadTexture(const std::string& name, const std::string& file, bool min, bool mag);
+	sh<TextureAtlas> loadAtlas(const char*, uint32, uint32);
+
+	sh<class Shader> loadShader(const std::string& name);
+	sh<Shader> loadShader(const std::string& name, const std::string& file);
 private:
-    void drawGame11(GLContext&);
-	void renderUI(GLContext&);
-    void log(const std::string&, const std::string&);
+	GL glVersion;
+	void log(const std::string&, const std::string&);
 };

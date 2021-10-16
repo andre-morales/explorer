@@ -1,13 +1,16 @@
 #include "Render/GLContext.h"
 #include "Explorer/Window.h"
+#include "Render/Shader.h"
 #include "GL/glew.h"
 
-GLContext::GLContext(Shared<Window> w)
-: window(w){
+GLContext::GLContext(GL::GLContext v, Shared<Window> w)
+: version(v), window(w){
 	shaderId = 0;
+	depthTesting = false;
+	faceCulling = false;
 	fog = texture2d = alphaTesting = blending = false;
 	blendingSource = blendingDestination = 0;
-	vertsArray = uvsArray = normalsArray = colorsArray = false;
+	vertsArray = uvsArray = normalsArray = false;
 	colorMaterial = false;
 	shadingModel = GL_SMOOTH;
 	frameBufferId = texture2dId = arrayBufferId = 0;
@@ -143,6 +146,11 @@ void GLContext::disableColorMaterial(){
 	if(colorMaterial){ colorMaterial = false; glDisable(GL_COLOR_MATERIAL); }
 }
 
+// OpenGL 1.5
+void GLContext::bindArrayBuffer(const std::string& name) {
+	glBindBuffer(GL_ARRAY_BUFFER, buffers[name]);
+}
+
 // OpenGL 2.0
 void GLContext::bindShader(uint32 shader){
 	if(shaderId != shader){
@@ -150,7 +158,9 @@ void GLContext::bindShader(uint32 shader){
 		glUseProgram(shader);
 	}
 }
-
+void GLContext::bindShader(const std::string& name) {
+	bindShader(shaders[name]->glId);
+}
 // OpenGL 3.0
 void GLContext::bindFramebuffer(uint32 framebuffer){
 	if(frameBufferId != framebuffer){

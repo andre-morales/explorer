@@ -37,42 +37,43 @@ void ChunkBatcher::batchCenter(Chunk& chunk){
 	chunk.genVertsP = chunk.batchedVerts;
 	chunk.genUVsP = chunk.batchedUVs;
 	chunk.genColorsP = chunk.batchedColors;
+	chunk.genNormalsP = chunk.batchedNormals;
 	chunk.batchedVertsLen = 0;
 
 	BatchContext bc{chunk, 0};
-	for(int x = 1; x < 23; x++){
-		for(int y = 0; y < 24; y++){
+	for(int y = 0; y < 24; y++){
+		for(int x = 1; x < 23; x++){
 			for(int z = 1; z < 23; z++){
-				Block& block = data[x][y][z];
+				Block& block = data[y][x][z];
 				uint8 id = block.id;
 
-				if(id > 1){
-					byte topBlock = 0;
-					byte bottomBlock = 0;
-					byte leftBlock = 0;
-					byte rightBlock = 0;
-					byte frontBlock = 0;
-					byte backBlock = 0;
+				if(id > 0){
+					if(y < 23){
+						byte topBlock = data[y + 1][x][z].id;
+						bool top = !infos[topBlock].opaque;
+						if(top)    addFace(bc, id, 0, x, y, z);
+					}
 
-					if(y > 0)  bottomBlock = data[x][y - 1][z].id;
-					if(y < 23) topBlock = data[x][y + 1][z].id;
-					leftBlock = data[x-1][y][z].id;
-					rightBlock = data[x+1][y][z].id;
-					frontBlock = data[x][y][z+1].id;
-					backBlock = data[x][y][z-1].id;
-
-					bool top = !infos[topBlock].opaque;
-					bool bottom = !infos[bottomBlock].opaque;
-					bool left = !infos[leftBlock].opaque;
-					bool right = !infos[rightBlock].opaque;
-					bool front = !infos[frontBlock].opaque;
-					bool back = !infos[backBlock].opaque;
+					if(y > 0) {
+						byte bottomBlock = data[y - 1][x][z].id;
+						bool bottom = !infos[bottomBlock].opaque;
+						if(bottom) addFace(bc, id, 1, x, y, z);
+					}
 					
-					if(top)    addFace(bc, id, 0, x, y, z);
-					if(bottom) addFace(bc, id, 1, x, y, z);
+					byte leftBlock =   data[y][x-1][z].id;
+					bool left = !infos[leftBlock].opaque;
 					if(left)   addFace(bc, id, 2, x, y, z);
+
+					byte rightBlock =  data[y][x+1][z].id;
+					bool right = !infos[rightBlock].opaque;
 					if(right)  addFace(bc, id, 3, x, y, z);
+
+					byte frontBlock =  data[y][x][z+1].id;
+					bool front = !infos[frontBlock].opaque;
 					if(front)  addFace(bc, id, 4, x, y, z);
+
+					byte backBlock =   data[y][x][z-1].id;
+					bool back = !infos[backBlock].opaque;		
 					if(back)   addFace(bc, id, 5, x, y, z);
 				}
 			}
@@ -82,7 +83,9 @@ void ChunkBatcher::batchCenter(Chunk& chunk){
 	chunk.cornerVertsP = chunk.genVertsP;
 	chunk.cornerUVsP = chunk.genUVsP;
 	chunk.cornerColorsP = chunk.genColorsP;
+	chunk.cornerNormalsP = chunk.genNormalsP;
 	chunk.cornerVertsLen = chunk.batchedVertsLen;
+
 	chunk.batchedCenter = true;
 	chunk.batchedCorners = false;
 	chunk.batching = false;
@@ -112,50 +115,72 @@ void ChunkBatcher::batchCorners(Chunk& chunk){
 	auto alg = [this, ndata, bc](int8 x, int8 z){
 		auto& data = *bc.ch.blocks;
 		for(int y = 0; y < 24; y++){
-			auto& block = data[x][y][z];
+			auto& block = data[y][x][z];
 			byte id = block.id;
 
-			if(id > 1){
-				auto* lb = ndata[0];
-				auto* fb = ndata[2];
-				auto* rb = ndata[4];
-				auto* bb = ndata[6];
+			if(id > 0){
+				// Top
+				if(y < 23){
+					byte bl = data[y + 1][x][z].id;
+					bool top = !blockDB[bl].opaque;
+					if(top) addFace(bc, id, 0, x, y, z);
+				}
 
-				byte topBlock = 0;
-				byte bottomBlock = 0;
-				byte leftBlock = 0;
-				byte rightBlock = 0;
-				byte frontBlock = 0;
-				byte backBlock = 0;
-
-				if(y > 0)  bottomBlock = data[x][y - 1][z].id;
-				if(y < 23) topBlock = data[x][y + 1][z].id;
-
-				if(x > 0)  leftBlock = data[x-1][y][z].id;
-				else if(lb) leftBlock = (*lb)[23][y][z].id;
-
-				if(x < 23) rightBlock = data[x+1][y][z].id;
-				else if(rb) rightBlock = (*rb)[0][y][z].id;
-
-				if(z < 23) frontBlock = data[x][y][z + 1].id;
-				else if(fb)frontBlock = (*fb)[x][y][0].id;
-
-				if(z > 0)  backBlock = data[x][y][z - 1].id;
-				else if(bb) backBlock =(*bb)[x][y][23].id;
-
-				bool top = !blockDB[topBlock].opaque;
-				bool bottom = !blockDB[bottomBlock].opaque;
-				bool left = !blockDB[leftBlock].opaque;
-				bool right = !blockDB[rightBlock].opaque;
-				bool front = !blockDB[frontBlock].opaque;
-				bool back = !blockDB[backBlock].opaque;
+				// Bottom
+				if(y > 0){ 
+					byte bl = data[y - 1][x][z].id;
+					bool bottom = !blockDB[bl].opaque;
+					if(bottom) addFace(bc, id, 1, x, y, z);
+				}
 				
-				if(top)    addFace(bc, id, 0, x, y, z);
-				if(bottom) addFace(bc, id, 1, x, y, z);
-				if(left)   addFace(bc, id, 2, x, y, z);
-				if(right)  addFace(bc, id, 3, x, y, z);
-				if(front)  addFace(bc, id, 4, x, y, z);
-				if(back)   addFace(bc, id, 5, x, y, z);
+				// Left
+				auto& lb = ndata[0];
+				if(x > 0){ 
+					byte bl = data[y][x-1][z].id;
+					bool left = !blockDB[bl].opaque;
+					if(left) addFace(bc, id, 2, x, y, z);
+				} else if(lb){
+					byte bl = (*lb)[y][23][z].id;
+					bool left = !blockDB[bl].opaque;
+					if(left) addFace(bc, id, 2, x, y, z);
+				}
+
+				// Right
+				auto& rb = ndata[4];
+				if(x < 23){
+					byte bl = data[y][x+1][z].id;
+					bool right = !blockDB[bl].opaque;
+					if(right) addFace(bc, id, 3, x, y, z);
+				} else if(rb){
+					byte bl = (*rb)[y][0][z].id;
+					bool right = !blockDB[bl].opaque;
+					if(right) addFace(bc, id, 3, x, y, z);
+				}
+
+				// Front
+				auto& fb = ndata[2];
+				if(z < 23){
+					byte bl =  data[y][x][z + 1].id;
+					bool front = !blockDB[bl].opaque;
+					if(front)  addFace(bc, id, 4, x, y, z);
+				} else if(fb){
+					byte bl = (*fb)[y][x][0].id;
+					bool front = !blockDB[bl].opaque;
+					if(front)  addFace(bc, id, 4, x, y, z);
+				}
+
+				// Back
+				auto& bb = ndata[6];
+				if(z > 0){ 
+					byte bl = data[y][x][z - 1].id; 
+					bool back = !blockDB[bl].opaque;
+					if(back)   addFace(bc, id, 5, x, y, z);
+				} else if(bb){
+					byte bl = (*bb)[y][x][23].id;
+					bool back = !blockDB[bl].opaque;
+					if(back)   addFace(bc, id, 5, x, y, z);
+					
+				}
 			}
 		}
 	};
@@ -167,6 +192,7 @@ void ChunkBatcher::batchCorners(Chunk& chunk){
 	chunk.genVertsP = chunk.cornerVertsP;
 	chunk.genUVsP = chunk.cornerUVsP;
 	chunk.genColorsP = chunk.cornerColorsP;
+	chunk.genNormalsP = chunk.cornerNormalsP;
 	chunk.batchedVertsLen = chunk.cornerVertsLen;
 
 	for(int x = 0; x < 24; x++) alg(x, 0);
@@ -196,6 +222,8 @@ inline void aofc(byte* of, float opaqueness){ // Ambient Occlusion Factor Clamp
 
 
 void ChunkBatcher::addFace(const BatchContext& bc, byte id, byte face, int8 x, int8 y, int8 z){
+	using namespace Geometry;
+	
 	auto& infos = blockDB;
 	Chunk& ch = bc.ch;
 	Chunk* const* nb = bc.nb;
@@ -341,13 +369,10 @@ void ChunkBatcher::addFace(const BatchContext& bc, byte id, byte face, int8 x, i
 		*ch.genColorsP++ = cf_;
 
 		// Normals
-		float nx = (Cube::normals_tris[vt*3+0]);
-		float ny = (Cube::normals_tris[vt*3+1]);
-		float nz = (Cube::normals_tris[vt*3+2]);
-
-		*ch.genNormalsP++ = nx;
-		*ch.genNormalsP++ = ny;
-		*ch.genNormalsP++ = nz;
+		const int8* nb = Geometry::Cube::normals_tris_i8;
+		*ch.genNormalsP++ = nb[vt*3+0];
+		*ch.genNormalsP++ = nb[vt*3+1];
+		*ch.genNormalsP++ = nb[vt*3+2];
 	}
 }
 
@@ -359,12 +384,12 @@ void ChunkBatcher::addVertexAlloc(Chunk& ch, int n){
 		float* overts = ch.batchedVerts;
 		float* ouvs = ch.batchedUVs;
 		byte* ocolors = ch.batchedColors;
-		float* onormals = ch.batchedNormals;
+		int8* onormals = ch.batchedNormals;
 
-		ch.batchedVerts =   (float*)realloc(overts,   (uintptr)ch.allocatedVerts * 4 * 3);
-		ch.batchedUVs =     (float*)realloc(ouvs,     (uintptr)ch.allocatedVerts * 4 * 2);
-		ch.batchedColors =   (byte*)realloc(ocolors,  (uintptr)ch.allocatedVerts * 3);
-		ch.batchedNormals = (float*)realloc(onormals, (uintptr)ch.allocatedVerts * 4 * 3);
+		ch.batchedVerts =  (float*)realloc(overts,   (uintptr)ch.allocatedVerts * 4 * 3);
+		ch.batchedUVs =    (float*)realloc(ouvs,     (uintptr)ch.allocatedVerts * 4 * 2);
+		ch.batchedColors =  (byte*)realloc(ocolors,  (uintptr)ch.allocatedVerts * 3);
+		ch.batchedNormals = (int8*)realloc(onormals, (uintptr)ch.allocatedVerts * 3);
 
 		ch.genVertsP =   ch.batchedVerts +   (ch.genVertsP -   overts);
 		ch.genUVsP =     ch.batchedUVs +     (ch.genUVsP -     ouvs);
@@ -379,12 +404,15 @@ void ChunkBatcher::addVertexAlloc(Chunk& ch, int n){
 }
 
 float ChunkBatcher::opaqueness(const BatchContext& bc, int8 x, int8 y, int8 z){
+	if(y < 0 || y > 23){
+		return 0;
+	}
 	const auto& blocks = *(bc.ch.blocks);
 	const auto& nb = bc.nb;
 	Block bl;
 	if(!nb){	
-		if(x >= 0 && x <= 23 && y >= 0 && y <= 23 && z >= 0 && z <= 23){
-			bl = blocks[x][y][z];
+		if(x >= 0 && x <= 23 && z >= 0 && z <= 23){
+			bl = blocks[y][x][z];
 		} else throw Exception("Illegal!");
 	} else {
 		// 1 2 3
@@ -392,27 +420,27 @@ float ChunkBatcher::opaqueness(const BatchContext& bc, int8 x, int8 y, int8 z){
 		// 7 6 5
 		if(x < 0){
 			if(z < 0){
-				bl = (*nb[7]->blocks)[x + 24][y][z + 24];
+				bl = (*nb[7]->blocks)[y][x + 24][z + 24];
 			} else if(z > 23){
-				bl = (*nb[1]->blocks)[x + 24][y][z - 24];
+				bl = (*nb[1]->blocks)[y][x + 24][z - 24];
 			} else {
-				bl = (*nb[0]->blocks)[x + 24][y][z];
+				bl = (*nb[0]->blocks)[y][x + 24][z];
 			}
 		} else if(x > 23){
 			if(z < 0){
-				bl = (*nb[5]->blocks)[x - 24][y][z + 24];
+				bl = (*nb[5]->blocks)[y][x - 24][z + 24];
 			} else if(z > 23){
-				bl = (*nb[3]->blocks)[x - 24][y][z - 24];
+				bl = (*nb[3]->blocks)[y][x - 24][z - 24];
 			} else {
-				bl = (*nb[4]->blocks)[x - 24][y][z];
+				bl = (*nb[4]->blocks)[y][x - 24][z];
 			}
 		} else {
 			if(z > 23){
-				bl = (*nb[2]->blocks)[x][y][z - 24];
+				bl = (*nb[2]->blocks)[y][x][z - 24];
 			} else if(z < 0){
-				bl = (*nb[6]->blocks)[x][y][z + 24];
+				bl = (*nb[6]->blocks)[y][x][z + 24];
 			} else{
-				bl = blocks[x][y][z];
+				bl = blocks[y][x][z];
 			}
 		}	
 	}

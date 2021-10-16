@@ -16,9 +16,8 @@ Chunk::Chunk(Planet* pl, uint64 i) : id(i), planet(pl), batchingOpQueue(0){
 	Chunk::XYZ(id, &cx, &cy, &cz);
 }
 
-
 Chunk::~Chunk(){
-	free(blocks);
+	delete[] blocks;
 	free(batchedVerts);
 	free(batchedUVs);
 	free(batchedColors);

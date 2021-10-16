@@ -5,15 +5,15 @@
 #include "GUI/Sprite.h"
 #include "GUI/Components/Component.h"
 #include "GUI/Components/Button.h"
-#include "GUI/Components/SplitPane.h"
 #include "GUI/Components/GridPane.h"
 #include "GUI/Components/Label.h"
 #include "GUI/Components/ScrollBar.h"
+#include "GUI/Components/Toggle.h"
 #include "GUI/Layouts/StackLayout.h"
-#include "Game/Event.h"
+#include "GUI/Layouts/SplitLayout.h"
 
 StartUI::StartUI(Explorer& e)
-: Component(Sh<StackLayout>()), explorer(e){}
+: Component(new StackLayout()), explorer(e){}
 StartUI::~StartUI(){}
 
 void StartUI::create(){
@@ -24,9 +24,8 @@ void StartUI::create(){
 	setBackground(tex["title_bg"]);
 	this->bgSprite->scalingMode = ScalingMode::STRETCH;
 
-	auto root = addNew<SplitPane>();
+	auto root = addL<SplitLayout>(SplitLayout::HORIZONTAL, 0.35);
 	root->setBackground(false);
-	root->value = 0.35;
 	root->insets = {8, 8, 8, 8};
 
 	auto menu = root->addNew<GridPane>();
@@ -42,7 +41,7 @@ void StartUI::create(){
 	scroll->setButton(ui.clButton(""));
 	scroll->setBackground(spr["panel2"]);
 	scroll->increment = 1;
-	scroll->max = 3;
+	scroll->max = 2;
 	auto lbl = scroll->addT(ui.clLabel());
 	glSelectText = lbl.get();
 	lbl->setBackground(false);
@@ -55,15 +54,32 @@ void StartUI::create(){
 	glTextProps->textOrientation = Orientation::LEFT_TOP;
 	glTextProps->textSize = 3;
 	glTextProps->setBackground(false);
-	menu->setComponentSize(1, 1, 14);
+	menu->setComponentSize(1, 1, 12);
 
-	menu->addT(ui.clButton("Begin!", [this](auto&){
-		explorer.openMainMenu();
+	menu->add(ui.clButton("Begin!", [this](auto&){
+		explorer.loggingEnabled = toggleLogging->checked;
+		explorer.openMainMenu(this->glversion);
+	}));
+
+	toggleLogging = ui.clToggle(explorer.loggingEnabled, [this](auto tog, bool checked){
+		if(checked) {
+			tog->text = "Logging: ON";
+		} else {
+			tog->text = "Logging: OFF";
+		}
+	});
+	menu->add(toggleLogging);
+	toggleLogging->fireValueListeners();
+
+	menu->add(ui.clButton("Quit", [this](auto&){
+		explorer.exit();
 	}));
 	setGL(0);
+	scroll->setValue(1);
 }
 
 void StartUI::setGL(unsigned int v){
+	glversion = v;
 	std::string ver;
 	std::string& prop = glTextProps->text;
 	switch(v){

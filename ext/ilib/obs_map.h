@@ -1,7 +1,7 @@
 #pragma once
 #include <map>
 
-template<class K, class V> struct obs_map {
+template<class K, class V, auto defaultValue = 0> struct obs_map {
 	std::map<K, V> map;
 
 	typedef typename std::map<K, V>::iterator iterator_t;
@@ -11,7 +11,7 @@ template<class K, class V> struct obs_map {
 		if(it != map.end()){
 			return map[key];
 		}
-		return { nullptr };
+		return defaultValue;
 	}
 	template <class... Args>
 	void emplace(Args&&... args){

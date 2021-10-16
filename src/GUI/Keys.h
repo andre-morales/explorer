@@ -19,6 +19,9 @@
 #define IKEY_ESCAPE 256
 #define IKEY_ENTER 257
 #define IKEY_BACKSPACE 259
+#define IKEY_DOWN 264
+#define IKEY_UP 265
 #define IKEY_F1 290
 #define IKEY_F2 291
 #define IKEY_LEFT_SHIFT 340
+#define IKEY_LEFT_CTRL 341

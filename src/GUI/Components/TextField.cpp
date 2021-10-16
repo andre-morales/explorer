@@ -9,7 +9,7 @@ TextField::TextField(const std::string& txt){
 	this->text = txt;
 
 	addKeyListener([this](const KeyEvent& ev){
-		if(ev.isPress() && ev.isBackspace()){
+		if((ev.isPress() || ev.isRepeat()) && ev.isBackspace()){
 			if(text.length() > 0){
 				text.pop_back();
 			}
@@ -22,7 +22,6 @@ TextField::TextField(const std::string& txt){
 		}
 	});
 }
-TextField::~TextField(){}
 
 void TextField::paintComponent(GLContext& gi, vec2f anch) {
 	Component::paintComponent(gi, anch);

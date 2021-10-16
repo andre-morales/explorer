@@ -1,5 +1,5 @@
 #pragma once
-#include "GUI/Components/Component.h"
+#include "Component.h"
 
 class ScrollView : public Component {
 public:

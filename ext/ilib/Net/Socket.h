@@ -14,7 +14,7 @@ public:
 
 	uint32 write(const byte*, uint32) override;
 	uint32 read(byte*, uint32) override;
-	uint32 available() override;
+	uint32 toRead() override;
 	void setBlocking(bool);
 	void forceClose();
 private:

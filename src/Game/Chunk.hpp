@@ -14,8 +14,13 @@
 Chunk::Chunk(Planet* pl, int32 x, int32 y, int32 z) : Chunk(pl, Chunk::ID(x, y, z)){
 }
 
-void Chunk::allocateBlocks(){
-	blocks = (ChunkData*)malloc(24 * 24 * 24 * sizeof(Block));
+void Chunk::allocateBlocks(bool empty){
+	if(blocks) throw Exception("Blocks already allocated!");
+	if(empty) {
+		blocks = (ChunkData*) new Block[24 * 24 * 24]();
+	} else {
+		blocks = (ChunkData*) new Block[24 * 24 * 24];
+	}
 }
 
 //yyyy_zzzzzzzzzzzzzzzzzzzzzzzzzzzzzz_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx

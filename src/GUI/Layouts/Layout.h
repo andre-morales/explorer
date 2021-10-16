@@ -6,8 +6,8 @@ class Layout {
 public:
 	Component* component = nullptr;
 
-	Layout();
-	virtual ~Layout();
+	Layout() = default;
+	virtual ~Layout() = default;
 
 	void relayout();
 	virtual void added(Component&);

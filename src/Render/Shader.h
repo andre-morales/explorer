@@ -1,22 +1,23 @@
-/*#pragma once
-#include <ilib/types.h>
+#pragma once
+#include "ilib/types.h"
+#include "ilib/Math/mat4.h"
+#include "ilib/Math/vec2.h"
 #include <string>
 #include <unordered_map>
-#include <math/mat4.h>
-#include <math/vec2.h>
+
 class Shader {
 public:
 	bool dirty; // If this shader needs to be recompiled.
 	uint32 glId;
-	std::unordered_map<std::string, std::string> constants;
+	/*std::unordered_map<std::string, std::string> constants;
 	std::unordered_map<std::string, int32> uniformLocations;
-	std::unordered_map<std::string, int32> attribsLocations;
+	std::unordered_map<std::string, int32> attribsLocations;*/
 
 	Shader();
 	~Shader();
 
-	void readShaderFile(const char*);
-	int32 getUniformID(const std::string&);
+	void readShaderFile (const std::string&);
+	/*int32 getUniformID(const std::string&);
 	int32 getAttributeID(const std::string&);
 	void setUniform(const char*, int);
 	void setUniform(const char*, float);
@@ -24,16 +25,16 @@ public:
 	void setUniform(const char*, const mat4d&);
 	void setUniform(const char*, const vec2i&);
 	void setUniform(const char*, const vec2f&);
-	void setUniform(const char*, bool);
+	void setUniform(const char*, bool);*/
 	void compile();
-	void setConstant(const std::string&, bool);
+	/*void setConstant (const std::string&, bool);
 	void setConstant(const std::string&, const std::string&);
-	void unsetConstant(const std::string&);
+	void unsetConstant(const std::string&);*/
 private:
 	std::string source;
 	std::string glVertStr, glFragStr;
 	uint32 glVertId, glFragId;
 
-	void release();
+	void destroy();
 	bool buildShader(uint32, uint32, const std::string&);
-};*/
+};

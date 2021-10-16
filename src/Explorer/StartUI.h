@@ -11,4 +11,6 @@ public:
 private:
 	Explorer& explorer;
 	class Label *glSelectText = 0, *glTextProps = 0;
+	sh<class Toggle> toggleLogging;
+	unsigned int glversion = 0;
 };

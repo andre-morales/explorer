@@ -22,7 +22,7 @@ public:
 	Chunk(Planet*, int32, int32, int32);
 	~Chunk();
 
-	void allocateBlocks();
+	void allocateBlocks(bool);
 	void gen();
 
 	static uint64 ID(int32, int32, int32);

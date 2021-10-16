@@ -2,16 +2,16 @@
 #include "GUI/Text.h"
 #include "GUI/Event/MouseButtonEvent.h"
 #include "GUI/Event/MouseMotionEvent.h"
+#include "GUI/Layouts/StackLayout.h"
 #include "Explorer/Window.h"
 #include "Render/GLContext.h"
 #include "Render/Font.h"
 #include <string>
-#include <GL/glew.h>
 #include <functional>
 
 Button::Button() : Button("Button"){}
-Button::Button(const std::string& text){
-	this->text = text;
+Button::Button(const std::string& t) : Component(new StackLayout()){
+	this->text = t;
 	focusable = true;
 	mouseHeldOver = false;
 	addMouseButtonListener([this](const MouseButtonEvent& ev){

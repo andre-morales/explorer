@@ -12,7 +12,7 @@ public:
 
 	Button();
 	Button(const std::string&);
-
+	virtual ~Button() = default;
 	void addActionListener(ActionListener);
 	void fireActionListeners(const ActionEvent&);
 

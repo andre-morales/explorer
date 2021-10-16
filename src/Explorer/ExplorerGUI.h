@@ -42,5 +42,9 @@ public:
 	sh<Label> clLabel();
 	sh<Label> clLabel(const char*);
 	sh<TextField> clTextField(const char*);
+	sh<class Toggle> clToggle(bool, std::function<void(Toggle*, bool)>);
+	sh<class ScrollBar> clScroll();
+	sh<class ScrollBar> clScroll(float);
+	sh<class ScrollBar> clScroll(float, std::function<void(float)>);
 	void loadSprites();
 };

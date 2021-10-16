@@ -44,8 +44,6 @@ void Window::create(){
 	handle = glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr);
 
 	CONTEXT_OK:
-	log("GLC", "Context created.");
-
 	if(posX >= 0 && posY >= 0){
 		glfwSetWindowPos(handle, posX, posY);
 	}
@@ -88,6 +86,13 @@ void Window::create(){
 		for(auto& f : win.charListeners){(*f)(chr); }
 	});
 	log("GLC", "Finished.");
+
+	acquireContext();
+	log("GL", "Context acquired.");
+	//glfwSwapInterval(1);
+	log("GL", std::string("Version: ") + (char*)glGetString(GL_VERSION));
+	log("GL", std::string("Vendor: ") + (char*)glGetString(GL_VENDOR));
+	log("GL", std::string("Renderer: ") + (char*)glGetString(GL_RENDERER));
 }
 
 void Window::setupGLHints(){
@@ -116,6 +121,14 @@ void Window::acquireContext(){
 
 void Window::bufferSwap(){
 	glfwSwapBuffers(handle);
+}
+
+void Window::setVSync(bool v) {
+	if(v) {
+		glfwSwapInterval(1);
+	} else {
+		glfwSwapInterval(0);
+	}
 }
 
 void Window::setVisible(bool v){

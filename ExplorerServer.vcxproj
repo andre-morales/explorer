@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="Fast|x64">
-      <Configuration>Fast</Configuration>
+    <ProjectConfiguration Include="Quick|x64">
+      <Configuration>Quick</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="Debug|x64">
@@ -15,6 +15,13 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ext\ilib\IO\CircularBuffer.cpp" />
+    <ClCompile Include="ext\ilib\IO\Compression\Deflate.cpp" />
+    <ClCompile Include="ext\ilib\IO\Compression\DeflateStream.cpp" />
+    <ClCompile Include="ext\ilib\IO\Compression\Inflate.cpp" />
+    <ClCompile Include="ext\ilib\IO\Compression\InflateStream.cpp" />
+    <ClCompile Include="ext\ilib\IO\Console.cpp" />
+    <ClCompile Include="ext\ilib\IO\Stream.cpp" />
     <ClCompile Include="src\Server\Client.cpp" />
     <ClCompile Include="ext\ilib\Math\noise.cpp" />
     <ClCompile Include="ext\ilib\Math\prng.cpp" />
@@ -32,6 +39,12 @@
     <ClCompile Include="src\Server\ServerChunk.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ext\ilib\IO\CircularBuffer.h" />
+    <ClInclude Include="ext\ilib\IO\Compression\Deflate.h" />
+    <ClInclude Include="ext\ilib\IO\Compression\DeflateStream.h" />
+    <ClInclude Include="ext\ilib\IO\Compression\Inflate.h" />
+    <ClInclude Include="ext\ilib\IO\Compression\InflateStream.h" />
+    <ClInclude Include="ext\ilib\IO\Console.h" />
     <ClInclude Include="src\Server\Client.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -55,7 +68,7 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Fast|x64'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Quick|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
@@ -73,19 +86,21 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Fast|x64'" Label="PropertySheets">
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Quick|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)msvc\server_build_cache\out\$(Configuration)_$(Platform)\</OutDir>
+    <IntDir>$(SolutionDir)msvc\server_build_cache\obj\$(Configuration)_$(Platform)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)msvc\server64\</OutDir>
     <IntDir>$(SolutionDir)msvc\server_build_cache\obj\$(Configuration)_$(Platform)\</IntDir>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Fast|x64'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Quick|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)msvc\server_build_cache\out\$(Configuration)_$(Platform)\</OutDir>
     <IntDir>$(SolutionDir)msvc\server_build_cache\obj\$(Configuration)_$(Platform)\</IntDir>
@@ -103,8 +118,9 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>ws2_32.lib;ucrtd.lib;msvcrtd.lib;msvcprtd.lib;vcruntimed.lib;kernel32.lib</AdditionalDependencies>
+      <AdditionalDependencies>zlib64.lib;ws2_32.lib;ucrtd.lib;msvcrtd.lib;msvcprtd.lib;vcruntimed.lib;kernel32.lib</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+      <AdditionalLibraryDirectories>msvc/lib64</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -123,11 +139,12 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>ws2_32.lib;msvcrt.lib;ucrt.lib;vcruntime.lib;msvcprt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>zlib64.lib;ws2_32.lib;msvcrt.lib;ucrt.lib;vcruntime.lib;msvcprt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+      <AdditionalLibraryDirectories>msvc/lib64</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Fast|x64'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Quick|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -146,8 +163,9 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>ws2_32.lib;msvcrt.lib;ucrt.lib;vcruntime.lib;msvcprt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>zlib64.lib;ws2_32.lib;msvcrt.lib;ucrt.lib;vcruntime.lib;msvcprt.lib;kernel32.lib</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+      <AdditionalLibraryDirectories>msvc/lib64</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

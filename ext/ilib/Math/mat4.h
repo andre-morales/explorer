@@ -2,19 +2,9 @@
 #include "vec4.h"
 #include <initializer_list>
 #include <string.h>
-static constexpr float mat4f_identity[] = {
-	1, 0, 0, 0,
-	0, 1, 0, 0,
-	0, 0, 1, 0,
-	0, 0, 0, 1,
-};
-static constexpr double mat4d_identity[] = {
-	1, 0, 0, 0,
-	0, 1, 0, 0,
-	0, 0, 1, 0,
-	0, 0, 0, 1,
-};
-template <class T> union mat4 {
+
+template <class T>
+union mat4 {
 	T mat[16];
 	struct {
 		T m00, m10, m20, m30;
@@ -22,14 +12,19 @@ template <class T> union mat4 {
 		T m02, m12, m22, m32;
 		T m03, m13, m23, m33;
 	};
-
+	
+	/* Constucts a mat4 with an identity matrix already loaded in. */
 	mat4() : mat4(1, 0, 0, 0,
 		0, 1, 0, 0,
 		0, 0, 1, 0,
 		0, 0, 0, 1){}
+
+	/* Constucts a mat4 copying the 16 values necessary from the pointer. */
 	mat4(const T* _mat){
 		memcpy(mat, _mat, 16 * sizeof(T));
 	}
+
+	/* Constucts a mat4 given each value manually. */
 	mat4(
 		T m00, T m10, T m20, T m30,
 		T m01, T m11, T m21, T m31,
@@ -40,6 +35,7 @@ template <class T> union mat4 {
 	m02(m02), m12(m12), m22(m22), m32(m32),
 	m03(m03), m13(m13), m23(m23), m33(m33){}
 
+	/* Constructs a mat4 copying the values from another mat4. */
 	template <class K>
 	mat4(const mat4<K>& m):
 	m00(m.m00), m10(m.m10), m20(m.m20), m30(m.m30),

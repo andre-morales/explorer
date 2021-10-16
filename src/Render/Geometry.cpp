@@ -1,18 +1,6 @@
 #include "Geometry.h"
 
-namespace Quad {
-	const float verts2_tris[] = {
-		-.5, -.5,
-		-.5, 0.5,
-		0.5, 0.5,
-		0.5, -.5,
-	};
-	const float verts3_tris[] = {
-		-.5, -.5, 0,
-		.5, -.5, 0,
-		.5, .5, 0,
-		-.5, .5, 0,
-	};
+namespace Geometry::Quad {
 	const float uvs[] = {
 		0, 0,
 		1, 0,
@@ -26,7 +14,7 @@ namespace Quad {
 		0, 1,
 	};
 }
-namespace Cube {
+namespace Geometry::Cube {
 	// --- INDEXED CUBE WITH TRIANGLES ---
 	const byte indices[] = {
 		 0,  1,  2,  2,  3,  0,
@@ -148,7 +136,7 @@ namespace Cube {
 		0, 0, 1,
 	};
 }
-namespace Cube_inside {
+namespace Geometry::Cube_inside {
 	const float verts[] = {
 		// Top
 		.5, .5, -.5,

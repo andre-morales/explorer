@@ -14,8 +14,8 @@ public:
 	Shared<Font> textFont;
 	float textSize = -1;
 
-    Text();
-    ~Text();
+	Text() = default;
+	virtual ~Text() = default;
 
     void setFont(Shared<Font>);
     void draw(GLContext&, const std::string&, const vec4f&, const Color&);

@@ -4,19 +4,19 @@
 #include "Explorer/ExplorerGUI.h"
 #include "Explorer/Camera.h"
 #include "Explorer/Window.h"
+#include "Explorer/ClientChunk.h"
 #include "Game/Instance.h"
 #include "Game/Universe.h"
 #include "Game/Planet.h"
-#include "Game/Chunk.h"
-#include "Game/Event.h"
 #include "Game/TextLog.h"
 #include "GUI/Components/Component.h"
 #include "GUI/Components/Label.h"
 #include "GUI/Components/Button.h"
-#include "GUI/Components/SplitPane.h"
 #include "GUI/Components/GridPane.h"
 #include "GUI/Components/BorderPane.h"
 #include "GUI/Components/TextField.h"
+#include "GUI/Components/Toggle.h"
+#include "GUI/Components/ScrollBar.h"
 #include "GUI/Layouts/StackLayout.h"
 #include "GUI/GUI.h"
 #include "GUI/Sprite.h"
@@ -24,9 +24,10 @@
 #include "Render/Renderer.h"
 #include "Net/Packet.h"
 #include "Net/PacketCodes.h"
-#include "ilib/Net/BufferedSocket.h"
 #include "ilib/Net/Socket.h"
 #include "ilib/Net/SocketException.h"
+#include "ilib/Math/maths.h"
+#include "ilib/IO/Compression/InflateStream.h"
 #include "ilib/thread.h"
 #include "ilib/logging.h"
 #include "cwarns.h"
@@ -64,8 +65,8 @@ void Game::init(){
 bool Game::connect(std::string ip, uint16 port){
 	log("Game", "Connecting to " + ip + ":" + std::to_string(port));
 	try {
-		socket = new BufferedSocket(Un<Socket>(ip.c_str(), port));
-		socket->init(16384);
+		impl.socket = new Socket(ip.c_str(), port);
+		impl.socket->setBlocking(false);
 		log("Game", "Connected.");
 	} catch (const SocketException& se){
 		log("Game", "Connection failed!");
@@ -78,7 +79,9 @@ void Game::start(){
 	using namespace std::chrono_literals;
 
 	log("Game", "Starting...");
-	impl.batchingThread.reset(new Thread([this](){
+	impl.batchingThread.reset(new Thread());
+	impl.batchingThread->thread = std::thread([this](){
+		log("Game-BT", "Started.");
 		auto& queue = impl.chunkBatchingQueue;
 
 		decltype(impl.chunkBatchingQueue) set; // Declares set to be the same type as queue
@@ -107,7 +110,7 @@ void Game::start(){
 				delete ch;
 			}
 		}
-	}));
+	});
 	log("Game", "Started.");
 }
 
@@ -116,15 +119,17 @@ void Game::stop(){
 		impl.batchingThread->interrupt();
 		impl.batchingThread->join();
 	}
-	impl.batchingThread = nullptr;
+	impl.batchingThread.reset();
 	log("Game", "Stopped.");
 }
 
 void Game::disconnect(){
 	net_disconnect();
 
-	delete socket;
-	socket = nullptr;
+	if(impl.socket){
+		delete impl.socket;
+		impl.socket = nullptr;
+	}
 	log("Game", "Disconnected.");
 }
 
@@ -137,7 +142,7 @@ void Game::shutdown(){
 
 void Game::registerListeners(){
 	Window& win = *explorer.renderer->window;
-	keyListener = win.addKeyListener([this](int key, int, int act, int){
+	impl.keyListener = win.addKeyListener([this](int key, int, int act, int){
 		if (!gameFocused) return;
 
 		if(key == IKEY_ESCAPE && act == 1){
@@ -161,10 +166,10 @@ void Game::registerListeners(){
 		}
 	});
 
-	mouseButtonListener = win.addMouseButtonListener([this](int btn, int act, int mods){
+	impl.mouseButtonListener = win.addMouseButtonListener([this](int btn, int act, int mods){
 
 	});
-	mouseMotionListener = win.addMouseMotionListener([this](double mx, double my){
+	impl.mouseMotionListener = win.addMouseMotionListener([this](double mx, double my){
 		if (!gameFocused) return;
 		if(lastMX != -1 && !uiOpen){
 			auto& rot = camera->rot;
@@ -182,16 +187,16 @@ void Game::unregisterListeners(){
 	if(!areListenersRegistered()) return;
 
 	Window& win = *explorer.renderer->window;
-	win.removeMouseButtonListener(mouseButtonListener);
-	win.removeMouseMotionListener(mouseMotionListener);
-	win.removeKeyListener(keyListener);
-	win.removeCharListener(charListener);
+	win.removeMouseButtonListener(impl.mouseButtonListener);
+	win.removeMouseMotionListener(impl.mouseMotionListener);
+	win.removeKeyListener(impl.keyListener);
+	win.removeCharListener(impl.charListener);
 }
 bool Game::areListenersRegistered(){
-	return keyListener != nullptr;
+	return impl.keyListener != nullptr;
 }
 bool Game::isConnected(){
-	return socket != nullptr;
+	return impl.socket != nullptr;
 }
 
 bool Game::inPlanet(){
@@ -201,18 +206,32 @@ bool Game::inPlanet(){
 void Game::update(double timeDelta){
 	auto& win = *explorer.renderer->window;
 	auto& cm = *camera;
-	float speed = timeDelta * 60 * 1;
+	
+	if(!inPlanet()) return;
+	auto& pl = *planet;
 
+	float speed = timeDelta * 60 * 1;
+	if(win.getKey(IKEY_LEFT_CTRL)){
+		speed *= 5;
+	}
+
+	if(pl.dayTime < 0) {
+		pl.dayTime += (int)pl.dayTime + 1;
+
+	}
+	if(pl.dayTime > 1) {
+		pl.dayTime -= (int)pl.dayTime;
+	}
 	if(gameFocused && !chatOpen){
 		if(win.getKey(IKEY_O)){
-			planet->dayTime -= 0.01;
+			planet->dayTime -= 0.1 * timeDelta;
 		} else if(win.getKey(IKEY_P)){
-			planet->dayTime += 0.01;
+			planet->dayTime += 0.1 * timeDelta;
 		}
 		if(win.getKey(IKEY_K)){
-			planet->sunXRotation -= 1;
+			planet->sunXRotation -= 20 * timeDelta;
 		} else if(win.getKey(IKEY_L)){
-			planet->sunXRotation += 1;
+			planet->sunXRotation += 20 * timeDelta;
 		}
 		if(win.getKey(IKEY_A)){
 			cm.pos.x -= cos(cm.rot.y * RADS) * speed;
@@ -240,20 +259,18 @@ void Game::update(double timeDelta){
 
 	if(!isConnected()) return;
 
+	impl.processOutQueue();
+
 	while(true){
-		net_receive();
-		if(net_inPacket.opcode){
+		if(net_receive()){
 			net_process();
 		} else break;
 	}
 
-	if(!inPlanet()) return;
-	auto& pl = *planet;
-
 	const int rd = renderDistance;
 	const int cx = floor(cm.pos.x / 24);
 	const int cz = floor(cm.pos.z / 24);
-	std::vector<uint64> chunksToDelete;
+	std::vector<Chunk*> chunksToDelete;
 	if(impl.batchingThread){
 		for(auto it = pl.chunkSet.begin(); it != pl.chunkSet.end(); ++it){
 			auto* ch = *it;
@@ -266,26 +283,55 @@ void Game::update(double timeDelta){
 				std::lock_guard lock(ch->stateLock);
 				if(ch->isDeletable()){
 					ch->deleteFlag = true;
-					chunksToDelete.emplace_back(ch->id);
+					chunksToDelete.emplace_back(ch);
 				}
 			}
 		}
-		for(uint64& id : chunksToDelete){
-			pl.deleteChunk(id);
+		for(Chunk*& ch : chunksToDelete){
+			explorer.renderer->freeChunk(ch);
+			pl.deleteChunk(ch->id);
 		}
 	}
+
+	std::vector<Chunk*> chunksToRequest;
 
 	for(int rx = -rd; rx < rd; rx++){
 		for(int rz = -rd; rz < rd; rz++){
 			if(sqrt(rx*rx + rz*rz) > rd) continue;
+
 			Chunk* ch = pl.getChunk(cx + rx, 0, cz + rz);
-			if(!ch){
-				auto* chunk = pl.createChunk(cx + rx, 0, cz + rz);
-				net_requestChunk(chunk->id);
-				chunk->state = Chunk::State::REQUESTED;
+			if(!ch) {
+				ch = pl.createChunk(cx + rx, 0, cz + rz);
+				chunksToRequest.push_back(ch);
 			}
 		}
 	}
+
+	std::sort(chunksToRequest.begin(), chunksToRequest.end(), [cx, cz](Chunk* a, Chunk* b) -> bool {
+		int ax = a->cx - cx;
+		int az = a->cz - cz;
+		float ad = sqrt(ax*ax + az*az);
+
+		int bx = b->cx - cx;
+		int bz = b->cz - cz;
+		float bd = sqrt(bx*bx + bz*bz);
+		return ad < bd;
+	});
+
+	for(Chunk* ch : chunksToRequest) {
+		net_requestChunk(ch->id);
+		ch->state = Chunk::State::REQUESTED;
+	}
+}
+
+void Game::onSecond () {
+	downKiBps = impl.downBytesCounter / 1024.0;
+	downBytesCounterFull += impl.downBytesCounter;
+	impl.downBytesCounter = 0;
+
+	upKiBps = impl.upBytesCounter / 1024.0;
+	upBytesCounterFull += impl.upBytesCounter;
+	impl.upBytesCounter = 0;
 }
 
 void Game::openMenu(){
@@ -328,8 +374,9 @@ void Game::closeChat(){
 }
 
 sh<Component> Game::makePauseMenu(){
+	auto& rend = *explorer.renderer;
 	auto& ui = *explorer.ui;
-	auto root = Sh<Component>(Sh<StackLayout>());
+	auto root = Sh<Component>(new StackLayout());
 	root->name = "game_pause_menu";
 	root->setBackground({0.5f, 0.7f, 1, 0.2f});
 	root->setVisible(false);
@@ -366,6 +413,7 @@ sh<Component> Game::makePauseMenu(){
 		optionsWindow->setBackground(ui.sprites["panel"]);
 		auto optionsTitle = optionsWindow->addT(ui.clLabel("Options"));
 		optionsTitle->height = 30;
+		optionsTitle->setBackground(true);
 		optionsWindow->setOrientation(0, Orientation::CENTER_TOP);
 		optionsWindow->setGrowRule(0, 1, 0);
 
@@ -375,17 +423,40 @@ sh<Component> Game::makePauseMenu(){
 		optionsGrid->insets = {8, 38, 8, 8};
 		optionsGrid->setSpacing(4, 4);
 		optionsGrid->setBackground(false);
-		optionsGrid->setGrid(1, 2);
-		optionsGrid->direction = GridPane::LR_BT;
-		auto returnBtn = optionsGrid->addT(ui.clButton("Return"));
-		returnBtn->addActionListener([optionsRoot](auto&){
-			optionsRoot->setVisible(false);
-		});	
-		auto colorsBtn = optionsGrid->addT(ui.clButton("Colors: ON"));
-		colorsBtn->addActionListener([this](auto&){
-			explorer.renderer->chunkColors = !explorer.renderer->chunkColors;
-		});	
+		optionsGrid->setGrid(1, 4);
+		optionsGrid->direction = GridPane::LR_TB;
+		
+		auto rdScroll = ui.clScroll();
+		rdScroll->min = 1;
+		rdScroll->max = 30;
+		rdScroll->increment = 1;
+		
+		rdScroll->addValueListener([this, rdScroll](float v){
+			renderDistance = v;
+			rdScroll->children[1]->text = "Render Distance: " + std::to_string((uint32)v);
+		});
+		optionsGrid->add(rdScroll);
 
+		rdScroll->setValue(24);
+
+		optionsGrid->addT(ui.clToggle(true, [&rend](auto t, bool c){
+			rend.window->setVSync(c);
+			t->text = "VSync: " + std::string(c?"ON":"OFF");
+		}))->fireValueListeners();
+
+		optionsGrid->addT(ui.clToggle(true, [&rend](auto t, bool c){
+			rend.chunkColors = c;
+			t->text = "Colors: " + std::string(c?"ON":"OFF");
+		}))->fireValueListeners();
+
+		optionsGrid->addT(ui.clToggle(true, [&rend](auto t, bool c){
+			rend.chunkLighting = c;
+			t->text = "Lighting: " + std::string(c?"ON":"OFF");
+		}))->fireValueListeners();
+
+		optionsGrid->add(ui.clButton("Return", [optionsRoot](auto&){
+			optionsRoot->setVisible(false);
+		}));
 		optionsRoot->setOrientation(0, Orientation::CENTER_MIDDLE);
 		optionsRoot->setGrowRule(0, 0.5, 0.5);
 	}
@@ -399,7 +470,7 @@ sh<Component> Game::makeChatPanel(){
 	root->setBackground({0, 0, 0, 0});
 	root->insets = {5, 5, 5, 5};
 
-	auto chatLog_ = root->addNew<Component>(Sh<StackLayout>());
+	auto chatLog_ = root->addNew<Component>(new StackLayout());
 	chatLog_->setBackground(false);
 	chatLog_->insets = {0, 0, 0, 35};
 	chatLogLabel = chatLog_->addT(explorer.ui->clLabel(""));
@@ -421,74 +492,97 @@ sh<Component> Game::makeChatPanel(){
 }
 
 void Game::net_requestChunk(uint64 id){
-	net_outPacket.opcode = PacketCode::CHUNK;
-	net_outPacket.data = (byte*)&id;
-	net_outPacket.length = 8;
+	byte buffer[6 + 8];
+	net_outPacket.buffer = buffer;
+	net_outPacket.opcode(PacketCode::CHUNK);
+	net_outPacket.data_copy_len((byte*)&id, 8);
+	net_outPacket.flags.stack_allocated = true;
 	net_send();
+	net_outPacket.release();
 }
 
 void Game::net_sendChatMessage(){
 	auto& text = chatInputField->text;
-	net_outPacket.opcode = PacketCode::CHAT_MSG;
-	net_outPacket.data = (byte*)text.c_str();
-	net_outPacket.length = text.length();
+	net_outPacket.create(PacketCode::CHAT_MSG, (byte*)text.c_str(), text.length());
 	net_send();
+	net_outPacket.destroy();
 }
 
 void Game::net_disconnect () {
-	net_outPacket.opcode = PacketCode::DISCONNECT;
-	net_outPacket.data = nullptr;
-	net_outPacket.length = 0;
+	byte buffer[6];
+	net_outPacket.buffer = buffer;
+	net_outPacket.opcode(PacketCode::DISCONNECT);
+	net_outPacket.length(0);
+	net_outPacket.flags.stack_allocated = true;
 	net_send();
+	net_outPacket.release();
 }
 
 void Game::net_join(){
-	net_outPacket.opcode = PacketCode::JOIN;
-	net_outPacket.data = (byte*)name.c_str();
-	net_outPacket.length = name.length();
+	log("Game", "Joining...");
+	net_outPacket.create(PacketCode::JOIN, (byte*)name.c_str(), name.length());
 	net_send();
+	net_outPacket.destroy();
 
-	auto universe = mkShared<Universe>(explorer.explorerInstance.get());
-	auto planet = mkShared<Planet>(universe.get());
+	log("Game", "Packet sent.");
+	auto universe = Sh<Universe>(explorer.explorerInstance.get());
+	auto planet = Sh<Planet>(universe.get());
+	log("Game", "Built world.");
 
 	universe->planets.emplace_back(planet);
 	explorer.explorerInstance->universes.emplace_back(universe);
 	this->universe = universe.get();
 	this->planet = planet.get();
+	log("Game", "Joined.");
 }
 
 bool Game::net_receive(){
-	socket->clearup();
-	socket->read(nullptr, 0);
-	uint32 available = socket->available();
-	if(available >= 6){
-		byte* readHead = socket->buffer + socket->readPtr;
+	try {
+		impl.downBytesCounter += impl.inflater->writeFrom(impl.socket, 32768);
+		impl.inflater->write(nullptr, 0);
 
-		uint32 len = *((uint32*)(readHead + 2));
-		if(available >= len + 6){
-			socket->read((byte*)&net_inPacket.opcode, 2);
-			socket->read((byte*)&net_inPacket.length, 4);
-			net_inPacket.data = new byte[len];
-			socket->read(net_inPacket.data, len);
-			return true;
+		uint32 toRead = impl.inflater->toRead();
+		uint16* opcode_ptr = (uint16*)impl.readInHeader;
+		uint32* len_ptr = (uint32*)(impl.readInHeader + 2);
+		if(*opcode_ptr == 0 && toRead >= 6) {
+			impl.inflater->read(impl.readInHeader, 6);
+
+			uint16 opcode = *opcode_ptr;
+			if(opcode == 0 || opcode > 5) throw Exception("Illegal opcode!");
+			toRead -= 6;
 		}
+
+		if(*opcode_ptr != 0) {
+			uint32 len = *len_ptr; // Peek at packet length
+			if(toRead >= len){
+				net_inPacket.buffer = new byte[6 + len];
+				memcpy(net_inPacket.buffer, impl.readInHeader, 6);
+				int wrr = impl.inflater->read(net_inPacket.buffer + 6, len);
+				if(wrr != len) throw Exception("illegal!");
+				*opcode_ptr = 0;
+				return true;
+			}
+		}
+	} catch (const SocketException& se){
+		log("Game", se.message);
 	}
-	net_inPacket.opcode = 0;
 	return false;
 }
 
-void Game::net_process(){
-	if(net_inPacket.opcode == 0) return;
-	Packet& packet = net_inPacket;
 
-	switch(packet.opcode){
+void Game::net_process(){
+	if(!net_inPacket.buffer) return;
+	Packet& packet = net_inPacket;
+	uint16 opcode = packet.opcode();
+	switch(opcode){
 	case PacketCode::CHUNK: {
-		auto id = *((uint64*)packet.data);
+		auto id = *((uint64*)packet.data());
 
 		auto* chunk = planet->getChunk(id);
 		if(chunk && chunk->state == Chunk::State::REQUESTED) {
-			chunk->allocateBlocks();
-			memcpy((byte*)chunk->blocks, packet.data + 8, 24 * 24 * 24);
+			chunk->allocateBlocks(false);
+			memcpy((byte*)chunk->blocks, packet.data() + 8, 24 * 24 * 24);
+
 			chunk->state = Chunk::State::FINISHED;
 			Chunk* nbs[8]{};
 			planet->getChunkNeighbours8(*chunk, nbs);
@@ -509,22 +603,43 @@ void Game::net_process(){
 		}
 		break;
 	case PacketCode::CHAT_MSG: {
-		auto msg = packet.asString();
+		auto msg = std::string((char*)packet.data(), packet.length());
 		chatLog->addLine(msg);
 		chatLogLabel->text = chatLog->asString();
 		std::cout << "Chat: " << msg << "\n";
 		}
 		break;
+	case 0: break;
 	default:
-		std::cout << "UP!\n";
+		throw Exception("Illegal packet code!");
 	}
 
-	delete packet.data;
-	packet.data = nullptr;
+	packet.destroy();
 }
 
 void Game::net_send(){
-	net_outPacket.send(socket);
+	if(!impl.socket) return;
+	Packet& p = net_outPacket;
+	uint32 plen = p.length();
+	try {
+		impl.socket->write(p.buffer, 6 + plen);
+		impl.upBytesCounter += plen + 6;
+	} catch (const SocketException& se){
+		if(se.code != SocketException::BUFFER_FULL) {
+			throw se;
+		} else {
+			if(p.flags.stack_allocated) {
+				// Packet has its buffer allocated on the stack, to enqueue it,
+				// we'll have to copy its data. New copy has unique_buffer flag set
+				// so that it gets deleted when the packet does finally gets sent.
+				byte* copy = new byte[6 + plen];
+				memcpy(copy, p.buffer, 6 + plen);
+				impl.outQueue.emplace(copy, Packet::Flags{false, true});
+			} else {
+				impl.outQueue.emplace(p.buffer, p.flags);
+			}
+		}
+	}
 }
 
 void Game::log(const std::string& cl, const std::string& msg){

@@ -9,12 +9,13 @@ public:
 	float near = 0.01, far = 2000.0;
 	vec3d pos = vec3d(0, 0, 0);
 	vec2f rot = vec2f(0, 0);
-	mat4d projection, view, transform;
+	mat4f projection, rotatedView, view, transform;
 
     Camera();
-	double* makeProjection();
-	double* makeView();
-	double* makeTransform();
+	void makeProjection();
+	void makeRotatedView();
+	void makeView();
+	void makeTransform();
 
 private:
     Camera(const Camera&) = delete;

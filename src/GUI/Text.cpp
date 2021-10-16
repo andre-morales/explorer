@@ -6,9 +6,6 @@
 #include <iostream>
 #include <string>
 
-Text::Text(){}
-Text::~Text(){}
-
 void Text::setFont(Shared<Font> font){
 	this->textFont = font;
 }

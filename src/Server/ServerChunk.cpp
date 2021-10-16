@@ -11,27 +11,16 @@
 #include "Exception.h"
 #include <cstring>
 
-Chunk::Chunk(Planet* pl, uint64 id) : planet(pl){
-	blocks = nullptr;
+Chunk::Chunk(Planet* pl, uint64 id) : blocks(nullptr), id(id), planet(pl){
 	Chunk::XYZ(id, &cx, &cy, &cz);
-	this->id = id;
 }
 Chunk::~Chunk(){
-	free(blocks);
-	blocks = nullptr;
+	delete[] blocks;
 }
 
 void Chunk::gen(){
-	allocateBlocks();
-	memset(blocks, 1, 24 * 24 * 24 * sizeof(Block));
+	if(!blocks) throw Exception("Blocks not allocated!");
 
-	for(int x = 0; x < 24; x++){
-		for(int z = 0; z < 24; z++){
-			(*blocks)[x][0][z] = Block{2};
-		}
-	}
-	//(*blocks)[x][n][z] = Block{3};
-	//state = State::TERRAIN;
 	for(int x = 0; x < 24; x++){
 		for(int z = 0; z < 24; z++){
 			int bx = x + (cx * 24);
@@ -43,17 +32,12 @@ void Chunk::gen(){
 			double ns = (0.7+pn) * 8;
 			uint16 n;
 			if(ns < 0) n = 0; else if(ns > 23) n = 23; else n = ns;
-			//hmap[x][z] = n;
 
-			//if(x == 0 || z == 0){
-			//	(*blocks)[x][n][z] = Block{4};
-			//} else {
-				(*blocks)[x][n][z] = Block{3};
-				for(int y = 1; y < n; y++){
-					(*blocks)[x][y][z] = Block{4};
-				}
-				(*blocks)[x][0][z] = Block{2};
-			//}
+			(*blocks)[n][x][z] = Block{2};
+			for(int y = 1; y < n; y++){
+				(*blocks)[y][x][z] = Block{3};
+			}
+			(*blocks)[0][x][z] = Block{1};
 		}
 	}
 }

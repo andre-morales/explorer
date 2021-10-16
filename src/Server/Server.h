@@ -9,6 +9,7 @@
 class Instance;
 class TcpServer;
 class Client;
+
 class Server {
 public:
 	un<Instance> explorerInstance;
@@ -35,7 +36,7 @@ private:
 	void clientListenerFn();
 	void worldGeneratorFn();
 	void clientThreadFn(Client*);
-	void handleClientPacket(Client&, Socket*, class Packet&);
+	void handleClientPacket(Client&, class Packet&);
 	void handleClientOutQueue(Client&);
 	void net_sendChatMessage(const std::string&);
 	void broadcastPacket(sh<Packet>&);

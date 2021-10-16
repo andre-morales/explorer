@@ -1,7 +1,5 @@
 #include "StackLayout.h"
 #include "GUI/Components/Component.h"
-StackLayout::StackLayout(){}
-StackLayout::~StackLayout(){}
 
 void StackLayout::imp_relayout(Component& comp) {
 	auto& i = component->insets;

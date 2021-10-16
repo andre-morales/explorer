@@ -1,9 +1,10 @@
 #include "Server.h"
+#include "Server/Version.h"
 #include "Server/Client.h"
 #include "Game/Instance.h"
 #include "Game/Universe.h"
 #include "Game/Planet.h"
-#include "Game/Chunk.h"
+#include "Server/ServerChunk.h"
 #include "Net/Packet.h"
 #include "Net/PacketCodes.h"
 #include "ilib/Net/TcpServer.h"
@@ -12,11 +13,14 @@
 #include "ilib/Net/SocketException.h"
 #include "ilib/IO/Stream.h"
 #include "ilib/thread.h"
+#include "ilib/logging.h"
+#include "ilib/Math/maths.h"
+#include "ilib/IO/Compression/DeflateStream.h"
 #include <iostream>
 #include <cstring>
 
 int main(){
-	std::cout << "Starting up...\n";
+	logln("Starting up...");
 	{
 		Server sv{};
 		sv.init();
@@ -27,7 +31,7 @@ int main(){
 }
 
 Server::Server(){
-
+	logln("Building Explorer Server " + std::string(ServerVersion::VER_STR));
 }
 Server::~Server(){
 
@@ -75,14 +79,19 @@ void Server::worldGeneratorFn(){
 		for(auto& req : set){
 			switch(req->style){
 			case 0:
+				pl.lock.lock();
 				auto* ch = pl.getChunk(req->id);
 				if(!ch){
 					ch = pl.createChunk(req->id);
+					pl.lock.unlock();
+					ch->allocateBlocks(true);
 					ch->gen();
+				} else {
+					pl.lock.unlock();
 				}
 				auto packet = Sh<Packet>();
 				createChunkPacket(*packet.get(), ch);
-				packet->setDeleteFlag();
+				packet->flags.unique_buffer = true;
 				req->client->enqueue_sync(packet);
 				break;
 			}
@@ -95,11 +104,11 @@ void Server::clientListenerFn(){
 	TcpServer serverSocket{3333};
 	serverSocket.start();
 
-	std::cout << "Listening for incoming connections.\n";
+	log("Listening for incoming connections.\n");
 
 	while(!clientListenerThread->interruptFlag){
 		Socket* newSocket = serverSocket.acceptConnection();;
-		std::cout << "Incoming connection.\n";
+		log("Incoming connection.\n");
 
 		auto* client = new Client();
 		client->socket = newSocket;
@@ -117,91 +126,121 @@ void Server::clientThreadFn(Client* client_){
 
 	Packet in;
 	bool waitingPacket = false;
+	byte inHeader[6];
+	uint16& inOpcode = *(uint16*)inHeader;
+	uint32& inLength = *(uint32*)(inHeader + 2);
+
+	client.outBuffer = un<Stream>(new DeflateStream(1024 * 16, 1024 * 16));
 
 	try {
 		while(!client.disconnected){
-			std::this_thread::sleep_for(1ms);
-			if(!waitingPacket){ // Empty
-				if(socket.available() >= 6){
-					ASocket::spinReadEx(socket, (byte*)&in.opcode, 2);
-					ASocket::spinReadEx(socket, (byte*)&in.length, 4);
-					
-					if(in.length == 0){
-						in.data = nullptr;
-						handleClientPacket(client, &socket, in);
-					} else {
-						waitingPacket = true;
-					}
-				}
-			} else if(socket.available() >= in.length){
-				in.data = new byte[in.length];
-				std::unique_ptr<byte[]> data(in.data); // Garantees that our data will even if exceptions are thrown.
-				ASocket::spinReadEx(socket, in.data, in.length);
+			//std::this_thread::sleep_for(200ms);
+			if(waitingPacket && socket.toRead() >= inLength){
+				in.buffer = new byte[inLength + 6];
+				un<byte[]> data(in.buffer);
+				memcpy(in.buffer, inHeader, 6);
 
+				ASocket::spinReadEx(*client.socket, in.data(), inLength);
+				handleClientPacket(client, in);	
 				waitingPacket = false;
-				handleClientPacket(client, &socket, in);	
+			}
+			while(!waitingPacket && socket.toRead() >= 6) {
+				socket.read(inHeader, 6);
+
+				if(inLength == 0){
+					in.buffer = inHeader;
+					handleClientPacket(client, in);
+				} else if(socket.toRead() >= inLength){
+					in.buffer = new byte[inLength + 6];
+					un<byte[]> data(in.buffer);
+					memcpy(in.buffer, inHeader, 6);
+
+					int r = socket.read(in.data(), inLength);
+					if(r < inLength) {
+						std::cout << "misalign";
+					}
+
+					handleClientPacket(client, in);	
+				} else {
+					waitingPacket = true;
+				}
 			}
 			handleClientOutQueue(client);
-			
 		}
 	} catch(const SocketException& se){
-		std::cout << "Connection closed.\n";
 	}
-
+	log("Connection closed.\n");
 }
 
 void Server::handleClientOutQueue(Client& client) {
-	// Forward all queued packets.
-	client.outQueueLock.lock();
-	auto packets(client.outQueue); // Copy queue
-	client.outQueue.clear();
-	client.outQueueLock.unlock();
+	byte compressdata[1024 * 8];
 
-	for(auto& shpacket : packets){
-		shpacket->send(client.socket);
-	}
-	
+	client.outBuffer->write(nullptr, 0);
+	uint32 cdw = client.outBuffer->read(compressdata, 1024 * 8);
+
+	uint32 arr = client.socket->write(compressdata, cdw);
+	if(arr != cdw) throw Exception("AAA");
+
+	// Forward all queued packets.
+	std::unique_lock lock_(client.outQueueLock);
+	if(client.outQueue.empty()) return;
+
+	auto begin = client.outQueue.begin();
+	uint32 size = 6 + (*begin)->length();
+	int space = client.outBuffer->toWrite();
+	if(space < size) return;
+
+	sh<Packet> packet = *begin;
+	client.outQueue.erase(begin);
+	lock_.unlock();
+
+	packet->send(client.outBuffer.get());
 }
 
-void Server::handleClientPacket(Client& client, Socket* socket, Packet& in){
-	switch(in.opcode){
+void Server::handleClientPacket(Client& client, Packet& in){
+	//std::cout << "hout\n";
+	auto* socket = client.socket;
+	auto opcode = in.opcode();
+	switch(opcode){
 	case PacketCode::JOIN:
-		client.name = std::string((char*)in.data, in.length);
+		client.name = std::string((char*)in.data(), in.length());
 		net_sendChatMessage("$aPlayer '$e" + client.name + "$a' joined!$r");
 		break;
 	case PacketCode::CHAT_MSG:
-		net_sendChatMessage("<" + client.name + "> " + std::string((char*)in.data, in.length));
+		net_sendChatMessage("<" + client.name + "> " + std::string((char*)in.data(), in.length()));
 		break;
 	case PacketCode::CHUNK: {
 		Planet& pl = *(explorerInstance->universes[0]->planets[0]);
-		uint64 chunkId = *((uint64*)in.data);
+		uint64 chunkId = *((uint64*)in.data());
+		pl.lock.lock();
 		Chunk* chunk = pl.getChunk(chunkId);
+		pl.lock.unlock();
 
 		if(chunk){
-			Packet out;
-			createChunkPacket(out, chunk);
-			out.send(socket);
-			delete[] out.data;
+			auto packet = Sh<Packet>();
+			createChunkPacket(*packet, chunk);
+			packet->flags.unique_buffer = true;
+			client.enqueue_sync(packet);
 		} else {
 			std::unique_lock lock(worldGenLock);
 			worldGenQueue.push_back(new GenRequest{chunkId, 0, &client});
 			worldGenCV.notify_one();
 		}
-		}
-		break;
+	}
+	break;
 	case PacketCode::DISCONNECT:
 		client.disconnected = true;
 		net_sendChatMessage("$cPlayer '$e" + client.name + "$c' disconnected!$r");
 		break;
 	}
-	in.data = 0;
+	in.buffer = 0;
 }
 
 void Server::net_sendChatMessage (const std::string& msg) {
-	std::cout << "Chat: " << msg << "\n";
+	logln("Chat: " + msg);
 
 	auto packet = Sh<Packet>();
-	packet->setDeleteFlag();
+	packet->flags.unique_buffer = true;
 
 	createChatMessagePacket(*packet, msg);
 	broadcastPacket(packet);
@@ -214,15 +253,11 @@ void Server::broadcastPacket(sh<Packet>& pkt){
 }
 
 void Server::createChatMessagePacket (Packet& pkt, const std::string& msg) {
-	pkt.opcode = PacketCode::CHAT_MSG;
-	pkt.copyFullData(msg.c_str(), msg.length());
+	pkt.create(PacketCode::CHAT_MSG, (byte*)msg.c_str(), msg.length());
 }
 
 void Server::createChunkPacket(Packet& pkt, Chunk* c){
-	pkt.opcode = PacketCode::CHUNK;
-	pkt.length = 8 + 24 * 24 * 24;
-	pkt.data = new byte[pkt.length];
-
-	memcpy(pkt.data, &c->id, 8);
-	memcpy(pkt.data + 8, c->blocks, 24 * 24 * 24);
+	pkt.create(PacketCode::CHUNK, 8 + 24 * 24 * 24);
+	memcpy(pkt.data(), &c->id, 8);
+	memcpy(pkt.data() + 8, c->blocks, 24 * 24 * 24);
 }

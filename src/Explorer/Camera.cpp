@@ -4,17 +4,18 @@
 
 Camera::Camera(){}
 
-double* Camera::makeProjection(){
-	projection = mat4d::perspective(aspect, fov, near, far);
-	return projection.mat;
+void Camera::makeProjection(){
+	projection = mat4f::perspective(aspect, fov, near, far);
 }
 
-double* Camera::makeView(){
-	view = mat4d::translation(-pos.x, -pos.y, -pos.z).rotateY(rot.y*RADS).rotateX(rot.x*RADS);
-	return view.mat;
+void Camera::makeRotatedView() {
+	rotatedView = mat4f::rotationY(rot.y*RADS).rotateX(rot.x*RADS);
 }
 
-double* Camera::makeTransform(){
+void Camera::makeView(){
+	view = mat4f::translation(-pos.x, -pos.y, -pos.z) * rotatedView;
+}
+
+void Camera::makeTransform(){
 	transform = view * projection;
-	return transform.mat;
 }

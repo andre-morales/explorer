@@ -16,11 +16,9 @@ void TextureAtlas::getTileUV(uint16 x, uint16 y, float* u, float* v){
 
 void TextureAtlas::getTileUV(uint16 xy, float* u, float* v){
 	uint16 htiles = width / tileWidth;
-	float x = xy % htiles;
-	float y = xy / htiles;
-
-	*u = x * tileWidth / width;
-	*v = y * tileHeight / height;
+	uint16 x = xy % htiles;
+	uint16 y = xy / htiles;
+	getTileUV(x, y, u, v);;
 }
 
 void TextureAtlas::getTileSize(uint32* w, uint32* h){
