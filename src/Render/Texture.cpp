@@ -1,11 +1,10 @@
 #include "Texture.h"
 #include "Image.h"
-#include <string.h>
-#include <lodepng.h>
+#include "GL/glew.h"
+#include <cstring>
 #include <cmath>
 #include <algorithm>
 #include <initializer_list>
-#include <GL/glew.h>
 
 Texture::Texture() : Texture(nullptr, false, false){}
 Texture::Texture(const char* path) : Texture(Image(path)){}

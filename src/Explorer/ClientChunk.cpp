@@ -37,4 +37,19 @@ bool Chunk::isDeletable(){
 	return !beingUsedForBatching && !batching && batchingOpQueue == 0;
 }
 
+#include "ilib/IO/BitBuffer.h"
+void Chunk::fromBitfield(BitBuffer* bf) {
+	//bf->bufferSize = highestBlockY * 24 * 24 / 4;
+	//bf->buffer = new byte[bf->bufferSize]();
+
+	for(int y = 0; y < bf->bufferSize * 8 / 24 / 24 / 5; y++){
+		for(int x = 0; x < 24; x++){
+			for(int z = 0; z < 24; z++){
+				byte id = bf->read(5);
+				(*blocks)[y][x][z].id = id;
+			}
+		}
+	}
+}
+
 #include "Game/Chunk.hpp"

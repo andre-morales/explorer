@@ -57,6 +57,8 @@ public:
 	void batchCorners();
 	bool isDeletable();
 
+	void fromBitfield(class BitBuffer*);
+
 	static uint64 ID(int32, int32, int32);
 	static void XYZ(uint64, int32*, int32*, int32*);	
 

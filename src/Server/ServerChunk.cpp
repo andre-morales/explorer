@@ -9,6 +9,7 @@
 #include "ilib/Math/vec3.h"
 #include "ilib/logging.h"
 #include "Exception.h"
+#include "ilib/Math/maths.h"
 #include <cstring>
 
 Chunk::Chunk(Planet* pl, uint64 id) : blocks(nullptr), id(id), planet(pl){
@@ -30,14 +31,72 @@ void Chunk::gen(){
 			double sc = 0.039196174894183;
 			double pn = planet->terrainGen.get(np+bx*sc, np+bz*sc, 0);
 			double ns = (0.7+pn) * 8;
-			uint16 n;
-			if(ns < 0) n = 0; else if(ns > 23) n = 23; else n = ns;
+
+			uint16 n = Math::clamp(ns, 0.0, 23.0);
+
+			if(n + 1 > highestBlockY) {
+				highestBlockY = n + 1;
+			}
 
 			(*blocks)[n][x][z] = Block{2};
 			for(int y = 1; y < n; y++){
 				(*blocks)[y][x][z] = Block{3};
 			}
 			(*blocks)[0][x][z] = Block{1};
+		}
+	}
+}
+#include "ilib/IO/BitBuffer.h"
+BitBuffer* Chunk::toBitfield () {
+	BitBuffer* bf = new BitBuffer();
+	bf->bufferSize = highestBlockY * 5 * 24 * 24 / 8;
+	bf->buffer = new byte[bf->bufferSize]();
+	
+	for(int y = 0; y < highestBlockY; y++){
+		for(int x = 0; x < 24; x++){
+			for(int z = 0; z < 24; z++){
+				bf->write((*blocks)[y][x][z].id, 5);
+			}
+		}
+	}
+
+	return bf;
+}
+
+void Chunk::fromBitfield(BitBuffer* bf) {
+	/*for (int y = 0; y < bf->bufferSize / 24 / 24; y++) {
+		for (int x = 0; x < 24; x++) {
+			for (int z = 0; z < 24; z++) {
+				byte id = bf->read(8);
+				(*blocks)[y][x][z].id = id;
+			}
+		}
+	}*/
+}
+
+BitBuffer* Chunk::toBitfield_() {
+	BitBuffer* bf = new BitBuffer();
+	bf->bufferSize = highestBlockY * 7 * 24 * 24 / 8;
+	bf->buffer = new byte[bf->bufferSize]();
+
+	for (int y = 0; y < highestBlockY; y++) {
+		for (int x = 0; x < 24; x++) {
+			for (int z = 0; z < 24; z++) {
+				bf->write((*blocks)[y][x][z].id, 7);
+			}
+		}
+	}
+
+	return bf;
+}
+
+void Chunk::fromBitfield_(BitBuffer* bf) {
+	for (uint32 y = 0; y < bf->bufferSize * 8 / 24 / 24 / 7; y++) {
+		for (uint32 x = 0; x < 24; x++) {
+			for (uint32 z = 0; z < 24; z++) {
+				byte id = bf->read(7);
+				(*blocks)[y][x][z].id = id;
+			}
 		}
 	}
 }

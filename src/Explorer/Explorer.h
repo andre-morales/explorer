@@ -4,18 +4,25 @@
 #include <functional>
 #include <vector>
 
-/**
- * This is the main class for the client.
- * It holds info about the states of the menus in the title screen
- * and holds pointers to other structures such as the renderer and
- * the actual game instance (Game.h).
- * Init / Shutdown / Updating and other main functions reside here.
+/*
+ This is the main class for the Explorer client.
+
+ It holds info about the states of the menus in the title screen
+ and holds pointers to other fundamental structures such as the renderer and
+ the actual game instance (Game.h).
+ Init / Shutdown / Updating and other main functions reside here.
  */
 class Explorer {
-	un<class ExplorerImpl> impl_;
+	/* Internal pointer to implementation. */
+	un<class ExplorerImpl> impl_; 
+	/* Private reference to implementation. This contains fields and methods
+	that sould not be acessible to others. */
 	ExplorerImpl& impl;
 
+	/* Line by line history of the console. */
 	Unique<class TextLog> consoleLog;
+
+	/* Console GUI component. */
 	Weak<class ConsoleUI> console;
 
 public:
@@ -24,6 +31,7 @@ public:
 	};
 
 	Screen screen = Screen::OFF;
+
 	Unique<class Instance> explorerInstance;
 	Unique<class Renderer> renderer;
 	Unique<class ExplorerGUI> ui;

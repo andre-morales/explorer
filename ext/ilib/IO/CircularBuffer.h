@@ -16,7 +16,9 @@ public:
 	~CircularBuffer();
 
 	uint32 write(const byte*, uint32) override;
+	uint32 writeFrom(Stream*, uint32) override;
 	uint32 read(byte*, uint32) override;
+	uint32 readInto(Stream*, uint32) override;
 	uint32 toRead() override;
 	uint32 toWrite() override;
 	
@@ -25,5 +27,7 @@ public:
 	uint32 toWrite_infront();
 	uint32 toRead_infront();
 	void validateHeads();
+private:
+	inline void dbg_validate();
 };
 

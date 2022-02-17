@@ -3,18 +3,19 @@
 #include "ilib/IO/CircularBuffer.h"
 #include "ilib/mem.h"
 
-class InflateStream : public Stream {
+class ZL_CompressorStream : public Stream {
 public:
 	un<CircularBuffer> inBuffer, outBuffer;
 
-	InflateStream(uint32, uint32);
-	~InflateStream();
+	ZL_CompressorStream(uint32, uint32);
+	~ZL_CompressorStream();
 
 	uint32 write(const byte*, uint32) override;
 	uint32 read(byte*, uint32) override;
+	uint32 readInto(Stream*, uint32) override;
 	uint32 toWrite() override;
 	uint32 toRead() override;
-	uint32 writeFrom(Stream*, uint32) override;
-	class Inflate* inflate_;
-};
+	void flush_sync();
 
+	class ZL_Compressor* deflate_;
+};

@@ -7,7 +7,7 @@ struct Exception : public std::exception {
 
 	Exception() : Exception("(Exception message)"){}
 	Exception(const std::string& m)
-	: std::exception(),
+	: std::exception("nice"),
 	message(m){
 		
 	}

@@ -5,13 +5,18 @@
 #include <vector>
 #include <string>
 #include <mutex>
-#include <list>
+#include <queue>
 class Instance;
 class TcpServer;
 class Client;
 
+namespace YAML {
+	class Node;
+}
+
 class Server {
 public:
+	YAML::Node* config = 0;
 	un<Instance> explorerInstance;
 	un<TcpServer> svSocket;
 	struct GenRequest {
@@ -23,15 +28,17 @@ public:
 	Thread* worldGeneratorThread = 0;
 	std::mutex worldGenLock;
 	std::condition_variable worldGenCV;
-	std::list<struct GenRequest*> worldGenQueue;
+	std::queue<struct GenRequest*> worldGenQueue;
 
 	std::vector<Client*> clients;
 	Server();
 	~Server();
 
 	void init();
+	void loadConfig();
 	void run();
 	void stop();
+
 private:
 	void clientListenerFn();
 	void worldGeneratorFn();
@@ -39,8 +46,10 @@ private:
 	void handleClientPacket(Client&, class Packet&);
 	void handleClientOutQueue(Client&);
 	void net_sendChatMessage(const std::string&);
+	//void net_spawnPlayer(const std::string&);
 	void broadcastPacket(sh<Packet>&);
-	void createChunkPacket(Packet&, class Chunk*);
+	void createChunkPacket(Client&, Packet&, class Chunk*);
 	void createChatMessagePacket(Packet&, const std::string&);
+	bool clientCommand(Client&, const std::string&);
 };
 

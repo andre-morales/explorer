@@ -9,19 +9,25 @@
       <Configuration>Debug</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Release-DbgInfo|x64">
+      <Configuration>Release-DbgInfo</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Release|x64">
       <Configuration>Release</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ext\ilib\IException.cpp" />
+    <ClCompile Include="ext\ilib\IO\BitBuffer.cpp" />
     <ClCompile Include="ext\ilib\IO\CircularBuffer.cpp" />
-    <ClCompile Include="ext\ilib\IO\Compression\Deflate.cpp" />
-    <ClCompile Include="ext\ilib\IO\Compression\DeflateStream.cpp" />
-    <ClCompile Include="ext\ilib\IO\Compression\Inflate.cpp" />
-    <ClCompile Include="ext\ilib\IO\Compression\InflateStream.cpp" />
-    <ClCompile Include="ext\ilib\IO\Console.cpp" />
+    <ClCompile Include="ext\ilib\IO\Compression\BZ2_Compressor.cpp" />
+    <ClCompile Include="ext\ilib\IO\Compression\BZ2_CompressorStream.cpp" />
+    <ClCompile Include="ext\ilib\IO\Compression\ZL_CompressorStream.cpp" />
+    <ClCompile Include="ext\ilib\IO\Compression\ZL_Compressor.cpp" />
     <ClCompile Include="ext\ilib\IO\Stream.cpp" />
+    <ClCompile Include="src\Net\PacketReader.cpp" />
     <ClCompile Include="src\Server\Client.cpp" />
     <ClCompile Include="ext\ilib\Math\noise.cpp" />
     <ClCompile Include="ext\ilib\Math\prng.cpp" />
@@ -35,17 +41,25 @@
     <ClCompile Include="src\Game\Planet.cpp" />
     <ClCompile Include="src\Game\Universe.cpp" />
     <ClCompile Include="src\Net\Packet.cpp" />
+    <ClCompile Include="src\Server\DefaultServerConfig.cpp" />
     <ClCompile Include="src\Server\Server.cpp" />
     <ClCompile Include="src\Server\ServerChunk.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ext\ilib\IO\BitBuffer.h" />
     <ClInclude Include="ext\ilib\IO\CircularBuffer.h" />
-    <ClInclude Include="ext\ilib\IO\Compression\Deflate.h" />
-    <ClInclude Include="ext\ilib\IO\Compression\DeflateStream.h" />
-    <ClInclude Include="ext\ilib\IO\Compression\Inflate.h" />
-    <ClInclude Include="ext\ilib\IO\Compression\InflateStream.h" />
-    <ClInclude Include="ext\ilib\IO\Console.h" />
+    <ClInclude Include="ext\ilib\IO\Compression\BZ2_Compressor.h" />
+    <ClInclude Include="ext\ilib\IO\Compression\BZ2_CompressorStream.h" />
+    <ClInclude Include="ext\ilib\IO\Compression\ZL_CompressorStream.h" />
+    <ClInclude Include="ext\ilib\IO\Compression\ZL_Compressor.h" />
+    <ClInclude Include="ext\ilib\IO\Stream.h" />
+    <ClInclude Include="ext\ilib\IException.h" />
+    <ClInclude Include="src\Exception.h" />
+    <ClInclude Include="src\Net\PacketReader.h" />
     <ClInclude Include="src\Server\Client.h" />
+    <ClInclude Include="src\Server\Server.h" />
+    <ClInclude Include="src\Server\ServerChunk.h" />
+    <ClInclude Include="src\Server\Version.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -58,20 +72,29 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
+    <EnableASAN>false</EnableASAN>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-DbgInfo|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+    <EnableASAN>false</EnableASAN>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Quick|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -84,6 +107,9 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release-DbgInfo|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Quick|x64'" Label="PropertySheets">
@@ -100,8 +126,13 @@
     <OutDir>$(SolutionDir)msvc\server64\</OutDir>
     <IntDir>$(SolutionDir)msvc\server_build_cache\obj\$(Configuration)_$(Platform)\</IntDir>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Quick|x64'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-DbgInfo|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)msvc\server64\</OutDir>
+    <IntDir>$(SolutionDir)msvc\server_build_cache\obj\$(Configuration)_$(Platform)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Quick|x64'">
+    <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)msvc\server_build_cache\out\$(Configuration)_$(Platform)\</OutDir>
     <IntDir>$(SolutionDir)msvc\server_build_cache\obj\$(Configuration)_$(Platform)\</IntDir>
   </PropertyGroup>
@@ -109,16 +140,18 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>EXPLORER_SERVER</PreprocessorDefinitions>
+      <PreprocessorDefinitions>EXPLORER_SERVER;_CRT_SECURE_NO_WARNINGS;DEBUG;DEBUG_CBUFFERS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
       <AdditionalIncludeDirectories>src;ext</AdditionalIncludeDirectories>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <DisableSpecificWarnings>4267;4244;4305;26812;</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>zlib64.lib;ws2_32.lib;ucrtd.lib;msvcrtd.lib;msvcprtd.lib;vcruntimed.lib;kernel32.lib</AdditionalDependencies>
+      <AdditionalDependencies>yaml-cppd.lib;bzip2.lib;zlib64.lib;ws2_32.lib;ucrtd.lib;msvcrtd.lib;msvcprtd.lib;vcruntimed.lib;kernel32.lib</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <AdditionalLibraryDirectories>msvc/lib64</AdditionalLibraryDirectories>
     </Link>
@@ -128,18 +161,41 @@
       <WarningLevel>Level3</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>EXPLORER_SERVER;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>false</SDLCheck>
+      <PreprocessorDefinitions>EXPLORER_SERVER;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>src;ext</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <DisableSpecificWarnings>4267;4305;4244</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>zlib64.lib;ws2_32.lib;msvcrt.lib;ucrt.lib;vcruntime.lib;msvcprt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>yaml-cpp.lib;bzip2.lib;zlib64.lib;ws2_32.lib;msvcrt.lib;ucrt.lib;vcruntime.lib;msvcprt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+      <AdditionalLibraryDirectories>msvc/lib64</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release-DbgInfo|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>false</SDLCheck>
+      <PreprocessorDefinitions>EXPLORER_SERVER;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>src;ext</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <DisableSpecificWarnings>4267;4305;4244</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>yaml-cpp.lib;bzip2.lib;zlib64.lib;ws2_32.lib;msvcrt.lib;ucrt.lib;vcruntime.lib;msvcprt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <AdditionalLibraryDirectories>msvc/lib64</AdditionalLibraryDirectories>
     </Link>
@@ -150,22 +206,24 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>EXPLORER_SERVER;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>EXPLORER_SERVER;_CRT_SECURE_NO_WARNINGS;</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>src;ext</AdditionalIncludeDirectories>
       <Optimization>Disabled</Optimization>
       <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <DisableSpecificWarnings>4267;4305;4244</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>false</EnableCOMDATFolding>
+      <OptimizeReferences>false</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>zlib64.lib;ws2_32.lib;msvcrt.lib;ucrt.lib;vcruntime.lib;msvcprt.lib;kernel32.lib</AdditionalDependencies>
+      <AdditionalDependencies>yaml-cpp.lib;bzip2.lib;zlib64.lib;ws2_32.lib;msvcrt.lib;ucrt.lib;vcruntime.lib;msvcprt.lib;kernel32.lib</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <AdditionalLibraryDirectories>msvc/lib64</AdditionalLibraryDirectories>
+      <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -27,14 +27,14 @@
 #include "ilib/Net/Socket.h"
 #include "ilib/Net/SocketException.h"
 #include "ilib/Math/maths.h"
-#include "ilib/IO/Compression/InflateStream.h"
 #include "ilib/thread.h"
 #include "ilib/logging.h"
 #include "cwarns.h"
 #include <iostream>
 #include <cmath>
 #include <cstring>
-#define RADS (3.14159265359/180.0)
+
+const double RADS = 3.14159265359 / 180.0;
 
 Game::Game(Explorer& exp)
 : explorer(exp), impl_(new GameImpl(*this)), impl(*impl_), chatLog(new TextLog()), camera(new Camera()){
@@ -91,10 +91,11 @@ void Game::start(){
 				impl.chunkAvailableCV.wait_for(lock, 500ms);
 				if(queue.empty()) continue;
 
-				set = queue;
-				queue.clear();
+				std::swap(set, queue);
 			}
-			for(auto& ch : set){
+			while(!set.empty() && !impl.batchingThread->getInterruptFlag()){
+				BatchRequest* ch = set.front();
+				set.pop();
 				switch(ch->code){
 				case 0:
 					ch->chunk->batch();
@@ -183,6 +184,7 @@ void Game::registerListeners(){
 		lastMY = my;
 	});
 }
+
 void Game::unregisterListeners(){
 	if(!areListenersRegistered()) return;
 
@@ -192,9 +194,11 @@ void Game::unregisterListeners(){
 	win.removeKeyListener(impl.keyListener);
 	win.removeCharListener(impl.charListener);
 }
+
 bool Game::areListenersRegistered(){
 	return impl.keyListener != nullptr;
 }
+
 bool Game::isConnected(){
 	return impl.socket != nullptr;
 }
@@ -261,7 +265,7 @@ void Game::update(double timeDelta){
 
 	impl.processOutQueue();
 
-	while(true){
+	for (int i = 0; i < 64; i++) {
 		if(net_receive()){
 			net_process();
 		} else break;
@@ -303,6 +307,7 @@ void Game::update(double timeDelta){
 			if(!ch) {
 				ch = pl.createChunk(cx + rx, 0, cz + rz);
 				chunksToRequest.push_back(ch);
+
 			}
 		}
 	}
@@ -423,12 +428,12 @@ sh<Component> Game::makePauseMenu(){
 		optionsGrid->insets = {8, 38, 8, 8};
 		optionsGrid->setSpacing(4, 4);
 		optionsGrid->setBackground(false);
-		optionsGrid->setGrid(1, 4);
+		optionsGrid->setGrid(1, 5);
 		optionsGrid->direction = GridPane::LR_TB;
 		
 		auto rdScroll = ui.clScroll();
 		rdScroll->min = 1;
-		rdScroll->max = 30;
+		rdScroll->max = 50;
 		rdScroll->increment = 1;
 		
 		rdScroll->addValueListener([this, rdScroll](float v){
@@ -437,7 +442,7 @@ sh<Component> Game::makePauseMenu(){
 		});
 		optionsGrid->add(rdScroll);
 
-		rdScroll->setValue(24);
+		rdScroll->setValue(50);
 
 		optionsGrid->addT(ui.clToggle(true, [&rend](auto t, bool c){
 			rend.window->setVSync(c);
@@ -492,9 +497,9 @@ sh<Component> Game::makeChatPanel(){
 }
 
 void Game::net_requestChunk(uint64 id){
-	byte buffer[6 + 8];
+	byte buffer[5 + 8];
 	net_outPacket.buffer = buffer;
-	net_outPacket.opcode(PacketCode::CHUNK);
+	net_outPacket.opcode(PacketInfo::CHUNK);
 	net_outPacket.data_copy_len((byte*)&id, 8);
 	net_outPacket.flags.stack_allocated = true;
 	net_send();
@@ -503,15 +508,15 @@ void Game::net_requestChunk(uint64 id){
 
 void Game::net_sendChatMessage(){
 	auto& text = chatInputField->text;
-	net_outPacket.create(PacketCode::CHAT_MSG, (byte*)text.c_str(), text.length());
+	net_outPacket.create(PacketInfo::CHAT_MSG, (byte*)text.c_str(), text.length());
 	net_send();
 	net_outPacket.destroy();
 }
 
 void Game::net_disconnect () {
-	byte buffer[6];
+	byte buffer[5];
 	net_outPacket.buffer = buffer;
-	net_outPacket.opcode(PacketCode::DISCONNECT);
+	net_outPacket.opcode(PacketInfo::DISCONNECT);
 	net_outPacket.length(0);
 	net_outPacket.flags.stack_allocated = true;
 	net_send();
@@ -520,7 +525,7 @@ void Game::net_disconnect () {
 
 void Game::net_join(){
 	log("Game", "Joining...");
-	net_outPacket.create(PacketCode::JOIN, (byte*)name.c_str(), name.length());
+	net_outPacket.create(PacketInfo::JOIN, (byte*)name.c_str(), name.length());
 	net_send();
 	net_outPacket.destroy();
 
@@ -538,27 +543,40 @@ void Game::net_join(){
 
 bool Game::net_receive(){
 	try {
-		impl.downBytesCounter += impl.inflater->writeFrom(impl.socket, 32768);
-		impl.inflater->write(nullptr, 0);
+		impl.downBytesCounter += impl.inputStream->writeFrom(impl.socket, UINT16_MAX);
+		impl.inputStream->write(nullptr, 0);
 
-		uint32 toRead = impl.inflater->toRead();
-		uint16* opcode_ptr = (uint16*)impl.readInHeader;
-		uint32* len_ptr = (uint32*)(impl.readInHeader + 2);
-		if(*opcode_ptr == 0 && toRead >= 6) {
-			impl.inflater->read(impl.readInHeader, 6);
+		uint32 toRead = impl.inputStream->toRead();
+		auto opcode_ptr = (uint8*)impl.net_readInHeader;
+		auto len_ptr = (uint32*)(impl.net_readInHeader + 1);
 
-			uint16 opcode = *opcode_ptr;
-			if(opcode == 0 || opcode > 5) throw Exception("Illegal opcode!");
-			toRead -= 6;
+		// No incoming packet info.
+		if(*opcode_ptr == 0 && toRead > 1) {
+			// Read opcode.
+			impl.inputStream->read((byte*)opcode_ptr, 1);
+			if(*opcode_ptr > 8) throw Exception("Illegal opcode!");
+			toRead -= 1;
+
+			// Check if it has a fixed length.
+			uint32 fl = 0xFFFFFFFF;
+
+			// Copy length from database.
+			memcpy(len_ptr, &fl, 4);
 		}
 
 		if(*opcode_ptr != 0) {
-			uint32 len = *len_ptr; // Peek at packet length
-			if(toRead >= len){
-				net_inPacket.buffer = new byte[6 + len];
-				memcpy(net_inPacket.buffer, impl.readInHeader, 6);
-				int wrr = impl.inflater->read(net_inPacket.buffer + 6, len);
-				if(wrr != len) throw Exception("illegal!");
+			// If the packet length is not yet known, download it if we have it available.
+			if(*len_ptr == 0xFFFFFFFF && toRead >= 4){
+				
+				impl.inputStream->read((byte*)len_ptr, 4);
+				toRead -= 4;
+			}
+
+			// Check if all the packet data has arrived.
+			if(*len_ptr != 0xFFFFFFFF && toRead >= *len_ptr){
+				net_inPacket.buffer = new byte[5 + *len_ptr];			
+				memcpy(net_inPacket.buffer, impl.net_readInHeader, 5);
+				int wrr = impl.inputStream->read(net_inPacket.buffer + 5, *len_ptr);
 				*opcode_ptr = 0;
 				return true;
 			}
@@ -569,19 +587,31 @@ bool Game::net_receive(){
 	return false;
 }
 
-
+#include "ilib/IO/BitBuffer.h"
 void Game::net_process(){
 	if(!net_inPacket.buffer) return;
+	
 	Packet& packet = net_inPacket;
-	uint16 opcode = packet.opcode();
+	uint8 opcode = packet.opcode();
 	switch(opcode){
-	case PacketCode::CHUNK: {
+	case PacketInfo::CHUNK: {
 		auto id = *((uint64*)packet.data());
 
 		auto* chunk = planet->getChunk(id);
 		if(chunk && chunk->state == Chunk::State::REQUESTED) {
 			chunk->allocateBlocks(false);
-			memcpy((byte*)chunk->blocks, packet.data() + 8, 24 * 24 * 24);
+			uint32 blockDataLength = packet.length() - 8;
+
+			BitBuffer* bb = new BitBuffer();
+			bb->buffer = packet.data() + 8;
+			bb->bufferSize = blockDataLength;
+
+			chunk->fromBitfield(bb);
+			//memcpy((byte*)chunk->blocks, packet.data() + 8, blockDataLength);
+
+			auto filledSpace = blockDataLength * 8 / 5;
+
+			memset(((byte*)chunk->blocks) + filledSpace, 0, 24 * 24 * 24 - filledSpace);
 
 			chunk->state = Chunk::State::FINISHED;
 			Chunk* nbs[8]{};
@@ -602,7 +632,7 @@ void Game::net_process(){
 		}
 		}
 		break;
-	case PacketCode::CHAT_MSG: {
+	case PacketInfo::CHAT_MSG: {
 		auto msg = std::string((char*)packet.data(), packet.length());
 		chatLog->addLine(msg);
 		chatLogLabel->text = chatLog->asString();
@@ -622,8 +652,8 @@ void Game::net_send(){
 	Packet& p = net_outPacket;
 	uint32 plen = p.length();
 	try {
-		impl.socket->write(p.buffer, 6 + plen);
-		impl.upBytesCounter += plen + 6;
+		impl.socket->write(p.buffer, 5 + plen);
+		impl.upBytesCounter += plen + 5;
 	} catch (const SocketException& se){
 		if(se.code != SocketException::BUFFER_FULL) {
 			throw se;
@@ -632,8 +662,8 @@ void Game::net_send(){
 				// Packet has its buffer allocated on the stack, to enqueue it,
 				// we'll have to copy its data. New copy has unique_buffer flag set
 				// so that it gets deleted when the packet does finally gets sent.
-				byte* copy = new byte[6 + plen];
-				memcpy(copy, p.buffer, 6 + plen);
+				byte* copy = new byte[5 + plen];
+				memcpy(copy, p.buffer, 5 + plen);
 				impl.outQueue.emplace(copy, Packet::Flags{false, true});
 			} else {
 				impl.outQueue.emplace(p.buffer, p.flags);

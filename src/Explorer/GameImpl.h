@@ -14,9 +14,9 @@ class GameImpl {
 public:
 	class Game& This;
 	class Socket* socket = nullptr;
-	un<class InflateStream> inflater;
+	un<class Stream> inputStream;
 	un<class Thread> batchingThread;
-	std::unordered_set<BatchRequest*> chunkBatchingQueue;
+	std::queue<BatchRequest*> chunkBatchingQueue;
 	std::condition_variable chunkAvailableCV;
 	std::mutex chunkAvailableLock;
 	std::queue<Packet> outQueue;
@@ -29,7 +29,7 @@ public:
 	uint64 downBytesCounter = 0;
 	uint64 upBytesCounter = 0;
 
-	byte readInHeader[6] = {0};
+	byte net_readInHeader[5] = {0};
 
 	GameImpl(Game& g);
 	~GameImpl();

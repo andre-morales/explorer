@@ -2,19 +2,24 @@
 #include "Net/Packet.h"
 #include <thread>
 #include <string>
-#include <set>
+#include <queue>
 #include <mutex>
 #include "ilib/mem.h"
 
 class Client {
 public:
-	class Socket* socket;
+	class Socket* socket = 0;
 	std::thread* thread = 0;
+	std::string compressionIn = "raw";
+	std::string compressionOut = "raw";
 	std::string name;
+	bool joined = false;
 	bool disconnected = false;
-	std::set<sh<Packet>> outQueue;
+
+	std::queue<sh<Packet>> outQueue;
 	std::mutex outQueueLock;
-	un<Stream> outBuffer;
+	un<class Stream> outBuffer;
+
 
 	void enqueue_sync(const sh<Packet>&);
 };

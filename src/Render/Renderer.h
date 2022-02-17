@@ -4,7 +4,6 @@
 #include "Render/GL.h"
 #include "ilib/obs_unordered_map.h"
 
-class Explorer;
 class Window;
 class GLContext;
 class Texture;
@@ -16,14 +15,14 @@ private:
 	class RendererImpl* impl_;
 	RendererImpl& impl;
 public:
-	Explorer& explorer;
+	class Explorer& explorer;
 	Shared<Window> window;
 	Shared<GLContext> context;
 	obs_unordered_map<std::string, Shared<Texture>> textures;
 	Shared<Font> font;
 
 	bool chunkColors = true, chunkLighting = true;
-	bool debugChunkState = false;
+	bool debugChunkState = true;
 
 	Renderer(Explorer&);
 	~Renderer();

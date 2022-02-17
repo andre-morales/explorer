@@ -1,10 +1,10 @@
-#include "Inflate.h"
+#include "ZL_Decompressor.h"
 #include "zlib/zlib.h"
 #include "Exception.h"
 
-Inflate::Inflate(){
+ZL_Decompressor::ZL_Decompressor(){
 	handle = new z_stream();
-	auto& stream = *handle;
+	auto& stream = *(z_stream*)handle;
 
 	stream.zalloc = Z_NULL;
 	stream.zfree = Z_NULL;
@@ -18,13 +18,13 @@ Inflate::Inflate(){
 	}
 }
 
-void Inflate::decompress(byte* in, uint32 inLen, uint32& read, byte* out, uint32 outLen, uint32& written){
-	auto& stream = *handle;
+void ZL_Decompressor::decompress(byte* in, uint32 inLen, uint32& read, byte* out, uint32 outLen, uint32& written){
+	auto& stream = *(z_stream*)handle;
 	stream.avail_in = inLen;
 	stream.next_in = in;
 
 	stream.avail_out = outLen;
-	stream.next_out =out;
+	stream.next_out = out;
 	int ret = inflate(&stream, Z_NO_FLUSH);
 	//int ret = inflate(&stream, Z_SYNC_FLUSH);
 	if(ret < 0) {

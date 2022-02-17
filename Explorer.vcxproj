@@ -9,12 +9,12 @@
       <Configuration>Debug</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="Debug-Fast|Win32">
-      <Configuration>Debug-Fast</Configuration>
+    <ProjectConfiguration Include="Release-DbgInfo|Win32">
+      <Configuration>Release-DbgInfo</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="Debug-Fast|x64">
-      <Configuration>Debug-Fast</Configuration>
+    <ProjectConfiguration Include="Release-DbgInfo|x64">
+      <Configuration>Release-DbgInfo</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="Quick|Win32">
@@ -43,11 +43,16 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ext\ilib\IException.cpp" />
+    <ClCompile Include="ext\ilib\IO\BitBuffer.cpp" />
     <ClCompile Include="ext\ilib\IO\CircularBuffer.cpp" />
-    <ClCompile Include="ext\ilib\IO\Compression\Inflate.cpp" />
-    <ClCompile Include="ext\ilib\IO\Compression\InflateStream.cpp" />
-    <ClCompile Include="ext\ilib\IO\Console.cpp" />
+    <ClCompile Include="ext\ilib\IO\Compression\BZ2_Decompressor.cpp" />
+    <ClCompile Include="ext\ilib\IO\Compression\BZ2_DecompressorStream.cpp" />
+    <ClCompile Include="ext\ilib\IO\Compression\ZL_Decompressor.cpp" />
+    <ClCompile Include="ext\ilib\IO\Compression\ZL_DecompressorStream.cpp" />
     <ClCompile Include="ext\ilib\IO\Stream.cpp" />
+    <ClCompile Include="src\Net\PacketReader.cpp" />
+    <ClCompile Include="ext\lodepng\lodepng.cpp" />
     <ClCompile Include="src\Explorer\ClientChunk.cpp" />
     <ClCompile Include="src\GUI\Layouts\Layout.cpp" />
     <ClCompile Include="src\GUI\Components\ScrollBar.cpp" />
@@ -57,7 +62,6 @@
     <ClCompile Include="ext\ilib\Net\Networking.cpp" />
     <ClCompile Include="ext\ilib\Net\Socket.cpp" />
     <ClCompile Include="ext\ilib\thread.cpp" />
-    <ClCompile Include="ext\lodepng.cpp" />
     <ClCompile Include="src\Explorer\Camera.cpp" />
     <ClCompile Include="src\Explorer\ChunkBatcher.cpp" />
     <ClCompile Include="src\Explorer\ConsoleUI.cpp" />
@@ -88,6 +92,7 @@
     <ClCompile Include="src\GUI\Sprite.cpp" />
     <ClCompile Include="src\GUI\Text.cpp" />
     <ClCompile Include="src\Net\Packet.cpp" />
+    <ClCompile Include="src\Net\PacketWriter.cpp" />
     <ClCompile Include="src\Render\Color.cpp" />
     <ClCompile Include="src\Render\Font.cpp" />
     <ClCompile Include="src\Render\Geometry.cpp" />
@@ -103,11 +108,18 @@
     <ClCompile Include="src\GUI\Components\Toggle.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ext\ilib\IException.h" />
+    <ClInclude Include="ext\ilib\IO\BitBuffer.h" />
     <ClInclude Include="ext\ilib\IO\CircularBuffer.h" />
+    <ClInclude Include="ext\ilib\IO\Compression\BZip2\BZ2_Decompressor.h" />
+    <ClInclude Include="ext\ilib\IO\Compression\BZip2\BZ2_DecompressorStream.h" />
     <ClInclude Include="ext\ilib\IO\Compression\Inflate.h" />
     <ClInclude Include="ext\ilib\IO\Compression\InflateStream.h" />
-    <ClInclude Include="ext\ilib\IO\Console.h" />
+    <ClInclude Include="ext\ilib\IO\Compression\ZLib\ZL_Decompressor.h" />
+    <ClInclude Include="ext\ilib\IO\Compression\ZLib\ZL_DecompressorStream.h" />
+    <ClInclude Include="ext\ilib\IO\Stream.h" />
     <ClInclude Include="ext\ilib\Net\ASocket.h" />
+    <ClInclude Include="src\Net\PacketReader.h" />
     <ClInclude Include="ext\zlib\zlib.h" />
     <ClInclude Include="src\Explorer\ClientChunk.h" />
     <ClInclude Include="src\Explorer\Explorer.h" />
@@ -121,6 +133,8 @@
     <ClInclude Include="src\Explorer\GameImpl.h" />
     <ClInclude Include="src\GUI\Layouts\SplitLayout.h" />
     <ClInclude Include="src\GUI\Layouts\StackLayout.h" />
+    <ClInclude Include="src\Net\PacketWriter.h" />
+    <ClInclude Include="src\Render\Renderer.h" />
     <ClInclude Include="src\Render\RendererImpl.h" />
   </ItemGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Quick|x64'">
@@ -247,10 +261,11 @@
       <OpenMPSupport>false</OpenMPSupport>
       <SupportJustMyCode>false</SupportJustMyCode>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <ObjectFileName>$(IntDir)\$(SafeParentName)$(SafeInputName)</ObjectFileName>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>msvc\lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>zlib64.lib;glfw3dll.lib;glew32.lib;ws2_32.lib;opengl32.lib;vcruntime.lib;msvcrt.lib;msvcprt.lib;ucrt.lib</AdditionalDependencies>
+      <AdditionalDependencies>bzip2.lib;zlib64.lib;glfw3dll.lib;glew32.lib;ws2_32.lib;opengl32.lib;vcruntime.lib;msvcrt.lib;msvcprt.lib;ucrt.lib</AdditionalDependencies>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <OptimizeReferences>true</OptimizeReferences>
       <LinkStatus>false</LinkStatus>
@@ -305,7 +320,7 @@
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug-Fast|x64'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release-DbgInfo|x64'">
     <ClCompile>
       <AdditionalIncludeDirectories>src;ext;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>EXPLORER_CLIENT;RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -348,7 +363,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>msvc\lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw3dll.lib;glew32.lib;ws2_32.lib;opengl32.lib;vcruntime.lib;msvcrt.lib;msvcprt.lib;ucrt.lib</AdditionalDependencies>
+      <AdditionalDependencies>bzip2.lib;zlib64.lib;glfw3dll.lib;glew32.lib;ws2_32.lib;opengl32.lib;vcruntime.lib;msvcrt.lib;msvcprt.lib;ucrt.lib</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <OptimizeReferences>true</OptimizeReferences>
       <LinkStatus>false</LinkStatus>
@@ -405,7 +420,7 @@
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug-Fast|Win32'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release-DbgInfo|Win32'">
     <ClCompile>
       <AdditionalIncludeDirectories>src;ext;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>EXPLORER_CLIENT;RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -508,7 +523,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <AdditionalIncludeDirectories>src;ext;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>EXPLORER_CLIENT;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>EXPLORER_CLIENT;DEBUG;DEBUG_CBUFFERS</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
@@ -539,7 +554,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>msvc\lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>zlib64.lib;glfw3dll.lib;glew32.lib;ws2_32.lib;opengl32.lib;msvcrtd.lib;vcruntimed.lib;msvcprtd.lib;ucrtd.lib</AdditionalDependencies>
+      <AdditionalDependencies>bzip2.lib;zlib64.lib;glfw3dll.lib;glew32.lib;ws2_32.lib;opengl32.lib;msvcrtd.lib;vcruntimed.lib;msvcprtd.lib;ucrtd.lib</AdditionalDependencies>
       <GenerateDebugInformation>
       </GenerateDebugInformation>
       <AssemblyDebug>
@@ -599,53 +614,53 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Quick|x64'">
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <EnableASAN />
     <PreferredToolArchitecture>x64</PreferredToolArchitecture>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Quick|Win32'" Label="Configuration">
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <EnableASAN />
     <PreferredToolArchitecture>x64</PreferredToolArchitecture>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <EnableASAN />
     <PreferredToolArchitecture>x64</PreferredToolArchitecture>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <EnableASAN />
     <PreferredToolArchitecture>x64</PreferredToolArchitecture>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-Fast|x64'" Label="Configuration">
-    <PlatformToolset>v142</PlatformToolset>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-DbgInfo|x64'" Label="Configuration">
+    <PlatformToolset>v143</PlatformToolset>
     <EnableASAN />
     <PreferredToolArchitecture>x64</PreferredToolArchitecture>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-Remote|x64'" Label="Configuration">
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <EnableASAN />
     <PreferredToolArchitecture>x64</PreferredToolArchitecture>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-Fast|Win32'" Label="Configuration">
-    <PlatformToolset>v142</PlatformToolset>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-DbgInfo|Win32'" Label="Configuration">
+    <PlatformToolset>v143</PlatformToolset>
     <EnableASAN />
     <PreferredToolArchitecture>x86</PreferredToolArchitecture>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-Remote|Win32'" Label="Configuration">
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <EnableASAN />
     <PreferredToolArchitecture>x86</PreferredToolArchitecture>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <UseDebugLibraries>true</UseDebugLibraries>
     <EnableASAN>false</EnableASAN>
     <PreferredToolArchitecture>x64</PreferredToolArchitecture>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <UseDebugLibraries>true</UseDebugLibraries>
     <EnableASAN>false</EnableASAN>
     <PreferredToolArchitecture>x64</PreferredToolArchitecture>
@@ -675,7 +690,7 @@
     <IntDir>$(SolutionDir)msvc\build_cache\obj\$(Configuration)_$(Platform)\</IntDir>
     <GenerateManifest>false</GenerateManifest>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-Fast|x64'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-DbgInfo|x64'">
     <OutDir>$(SolutionDir)msvc\build_cache\out\$(Configuration)_$(Platform)\</OutDir>
     <IntDir>$(SolutionDir)msvc\build_cache\obj\$(Configuration)_$(Platform)\</IntDir>
     <GenerateManifest>false</GenerateManifest>
@@ -685,7 +700,7 @@
     <IntDir>$(SolutionDir)msvc\build_cache\obj\$(Configuration)_$(Platform)\</IntDir>
     <GenerateManifest>false</GenerateManifest>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-Fast|Win32'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-DbgInfo|Win32'">
     <IntDir>$(SolutionDir)msvc\build_cache\obj\$(Configuration)_$(Platform)\</IntDir>
     <GenerateManifest>false</GenerateManifest>
     <OutDir>$(SolutionDir)msvc\build_cache\out\$(Configuration)_$(Platform)\</OutDir>

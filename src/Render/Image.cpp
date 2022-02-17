@@ -1,7 +1,7 @@
 #include "Image.h"
-#include <string.h>
+#include "lodepng/lodepng.h"
+#include <cstring>
 #include "Exception.h"
-#include <lodepng.h>
 
 Image::Image(){}
 Image::Image(const char* file){

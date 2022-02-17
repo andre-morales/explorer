@@ -33,7 +33,6 @@
 using std::string;
 
 int main(){
-	
 	std::cout << "[-] Starting up...\n";
 	try {
 		{
@@ -163,6 +162,7 @@ void Explorer::registerBlocks(){
 		ei.registerBlock({"unknown", (byte)i, 0.1, (byte)i});
 	}
 	ei.registerBlock({"unknown", 0xEA, 0.1, 1});
+	ei.registerBlock({"unknown", 0xCD, 1.0, 1});
 }
 
 void Explorer::run(){
@@ -421,7 +421,7 @@ void Explorer::imp_localCommand(const std::string& str){
 		log("Console", "Dumping all blockdata to 'dbg_chunks'");
 		for(auto& ch : gameInstance->planet->chunkSet) {
 			if(ch->blocks){
-				auto file = "dbg_chunks\\" + std::to_string(ch->cx) + "-" + std::to_string(ch->cy) + ".ec";
+				auto file = "dbg_chunks\\" + std::to_string(ch->cx) + "-" + std::to_string(ch->cz) + ".ec";
 				std::ofstream off(file, std::ofstream::out);
 				if(off.fail()) throw Exception("dbg_chunks failed.");
 				off.write((char*)ch->blocks, 24 * 24 * 24);

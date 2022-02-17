@@ -21,8 +21,9 @@ public:
 	Packet(Packet&&) noexcept;
 	~Packet();
 
-	uint16 opcode() const;
-	void opcode(uint16);
+	uint8 opcode() const;
+	void opcode(uint8);
+
 	uint32 length() const;
 	void length(uint32);
 
@@ -41,14 +42,14 @@ public:
 	.buffer = new byte[6 + len]
 	opcode(op)
 	length(len) */
-	void create(uint16 op, uint32 len);
+	void create(uint8 op, uint32 len);
 
 	/* Allocates a new buffer and copies the data in ptr. Equivalent to
 		.buffer = new byte[6 + len]
 		opcode(op)
 		length(len)
 		data_copy(ptr) */
-	void create(uint16 op, const byte* ptr, uint32 len);
+	void create(uint8 op, const byte* ptr, uint32 len);
 
 	/* Call delete[] on buffer pointer and sets it to nullptr. */
 	void destroy();
@@ -56,7 +57,7 @@ public:
 	/* Sets buffer ptr to nullptr. */
 	void release();
 
-	void send(Stream*);
+	//void send(Stream*);
 private:
 	Packet(const Packet&) = delete;
 };
